@@ -1,0 +1,29 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "stress_readings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "processedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "stress_readings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "processedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

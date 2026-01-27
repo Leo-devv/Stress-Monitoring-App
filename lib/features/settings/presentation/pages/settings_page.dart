@@ -144,7 +144,7 @@ class SettingsPage extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -165,7 +165,7 @@ class SettingsPage extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(Icons.remove_circle_outline, size: 16, color: AppColors.textMuted),
+          const Icon(Icons.remove_circle_outline, size: 16, color: AppColors.textMuted),
           const SizedBox(width: 8),
           Text(text, style: AppTypography.bodySmall),
         ],

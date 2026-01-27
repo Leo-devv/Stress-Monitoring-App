@@ -23,7 +23,7 @@ class AboutSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [AppColors.primary, AppColors.primaryLight],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -50,7 +50,7 @@ class AboutSection extends StatelessWidget {
           ),
 
           const SizedBox(height: 20),
-          Divider(color: AppColors.border),
+          const Divider(color: AppColors.border),
           const SizedBox(height: 16),
 
           // Thesis Info
@@ -65,7 +65,7 @@ class AboutSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.school, size: 18, color: AppColors.textSecondary),
+                    const Icon(Icons.school, size: 18, color: AppColors.textSecondary),
                     const SizedBox(width: 8),
                     Text(
                       'Engineering Thesis Project',
@@ -94,7 +94,7 @@ class AboutSection extends StatelessWidget {
           _buildInfoRow(icon: Icons.architecture, label: 'Architecture', value: 'Hybrid Edge/Cloud'),
 
           const SizedBox(height: 20),
-          Divider(color: AppColors.border),
+          const Divider(color: AppColors.border),
           const SizedBox(height: 12),
 
           // Copyright

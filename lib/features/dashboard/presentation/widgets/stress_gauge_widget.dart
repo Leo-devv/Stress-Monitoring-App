@@ -47,7 +47,7 @@ class StressGaugeWidget extends StatelessWidget {
             startAngle: 135,
             endAngle: 45,
             radiusFactor: 0.9,
-            axisLineStyle: AxisLineStyle(
+            axisLineStyle: const AxisLineStyle(
               thickness: 0.15,
               thicknessUnit: GaugeSizeUnit.factor,
               color: AppColors.border,
@@ -85,7 +85,7 @@ class StressGaugeWidget extends StatelessWidget {
                 needleStartWidth: 1,
                 needleEndWidth: 3,
                 needleColor: AppColors.textPrimary,
-                knobStyle: KnobStyle(
+                knobStyle: const KnobStyle(
                   color: AppColors.textPrimary,
                   sizeUnit: GaugeSizeUnit.factor,
                   knobRadius: 0.06,

@@ -222,7 +222,7 @@ class _DeviceConnectionPageState extends ConsumerState<DeviceConnectionPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (_isScanning) ...[
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -305,11 +305,11 @@ class _DeviceConnectionPageState extends ConsumerState<DeviceConnectionPage>
           // Device Info
           _InfoRow(icon: Icons.watch, label: 'Device', value: _connectedDevice ?? 'Unknown'),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.signal_cellular_alt, label: 'Signal', value: 'Strong (-45 dBm)'),
+          const _InfoRow(icon: Icons.signal_cellular_alt, label: 'Signal', value: 'Strong (-45 dBm)'),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.battery_full, label: 'Battery', value: '78%'),
+          const _InfoRow(icon: Icons.battery_full, label: 'Battery', value: '78%'),
           const SizedBox(height: 12),
-          _InfoRow(icon: Icons.access_time, label: 'Connected', value: '2 min ago'),
+          const _InfoRow(icon: Icons.access_time, label: 'Connected', value: '2 min ago'),
           const SizedBox(height: AppSpacing.lg),
           // Disconnect Button
           SizedBox(

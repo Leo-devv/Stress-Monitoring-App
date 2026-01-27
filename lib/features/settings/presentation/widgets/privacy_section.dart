@@ -43,7 +43,7 @@ class PrivacySection extends StatelessWidget {
             ),
           ),
 
-          Divider(height: 1, color: AppColors.border),
+          const Divider(height: 1, color: AppColors.border),
 
           // Data Retention
           _buildSettingTile(
@@ -68,7 +68,7 @@ class PrivacySection extends StatelessWidget {
             ),
           ),
 
-          Divider(height: 1, color: AppColors.border),
+          const Divider(height: 1, color: AppColors.border),
 
           // Export Data
           _buildSettingTile(
@@ -77,7 +77,7 @@ class PrivacySection extends StatelessWidget {
             title: 'Export My Data',
             subtitle: 'Download all your data (GDPR)',
             trailing: IconButton(
-              icon: Icon(Icons.chevron_right, color: AppColors.textMuted),
+              icon: const Icon(Icons.chevron_right, color: AppColors.textMuted),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -89,7 +89,7 @@ class PrivacySection extends StatelessWidget {
             ),
           ),
 
-          Divider(height: 1, color: AppColors.border),
+          const Divider(height: 1, color: AppColors.border),
 
           // Nuke Data Button
           InkWell(

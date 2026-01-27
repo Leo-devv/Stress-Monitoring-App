@@ -80,7 +80,7 @@ class ProcessingModeBadge extends StatelessWidget {
         ),
         title: Row(
           children: [
-            Icon(Icons.info_outline, color: AppColors.primary),
+            const Icon(Icons.info_outline, color: AppColors.primary),
             const SizedBox(width: 12),
             Text(
               'Processing Status',
@@ -164,7 +164,7 @@ class ProcessingModeBadge extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.auto_awesome,
                     size: 16,
                     color: AppColors.textMuted,
@@ -186,7 +186,7 @@ class ProcessingModeBadge extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close', style: TextStyle(color: AppColors.primary)),
+            child: const Text('Close', style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),

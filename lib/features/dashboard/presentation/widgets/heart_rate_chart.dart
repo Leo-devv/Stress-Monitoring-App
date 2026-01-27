@@ -37,7 +37,7 @@ class HeartRateChart extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.show_chart,
             size: 48,
             color: AppColors.textMuted,

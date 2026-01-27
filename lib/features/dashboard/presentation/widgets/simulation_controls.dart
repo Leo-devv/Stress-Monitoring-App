@@ -34,7 +34,7 @@ class SimulationControls extends StatelessWidget {
                   color: AppColors.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.sensors,
                   color: AppColors.primary,
                   size: 20,
@@ -113,7 +113,7 @@ class SimulationControls extends StatelessWidget {
                     vertical: 14,
                     horizontal: 20,
                   ),
-                  side: BorderSide(color: AppColors.border),
+                  side: const BorderSide(color: AppColors.border),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

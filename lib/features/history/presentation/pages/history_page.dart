@@ -155,7 +155,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           outsideDaysVisible: false,
           defaultTextStyle: AppTypography.bodyMedium,
           weekendTextStyle: AppTypography.bodyMedium,
-          selectedDecoration: BoxDecoration(
+          selectedDecoration: const BoxDecoration(
             color: AppColors.accent,
             shape: BoxShape.circle,
           ),

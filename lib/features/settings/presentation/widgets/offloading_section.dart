@@ -32,7 +32,7 @@ class OffloadingSection extends StatelessWidget {
           // Header with explanation
           Row(
             children: [
-              Icon(Icons.memory, size: 20, color: AppColors.primary),
+              const Icon(Icons.memory, size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Text('AI Processing Mode', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
             ],
@@ -52,7 +52,7 @@ class OffloadingSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.lightbulb_outline, size: 16, color: AppColors.primary),
+                    const Icon(Icons.lightbulb_outline, size: 16, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Text(
                       'What is this?',
@@ -108,7 +108,7 @@ class OffloadingSection extends StatelessWidget {
           // Battery threshold slider (only shown for auto mode)
           if (currentStrategy == OffloadingStrategy.auto) ...[
             const SizedBox(height: 24),
-            Divider(color: AppColors.border),
+            const Divider(color: AppColors.border),
             const SizedBox(height: 16),
 
             Row(

@@ -103,7 +103,7 @@ class DashboardPage extends ConsumerWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.favorite, color: AppColors.heartRate, size: 14),
+                              const Icon(Icons.favorite, color: AppColors.heartRate, size: 14),
                               const SizedBox(width: 4),
                               Text(
                                 '${state.currentReading?.heartRate.round() ?? '--'} BPM',
@@ -243,7 +243,7 @@ class DashboardPage extends ConsumerWidget {
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.help_outline, size: 18, color: AppColors.primary),
+                child: const Icon(Icons.help_outline, size: 18, color: AppColors.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -261,7 +261,7 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              Icon(Icons.expand_more, color: AppColors.textMuted),
+              const Icon(Icons.expand_more, color: AppColors.textMuted),
             ],
           ),
           const SizedBox(height: 12),

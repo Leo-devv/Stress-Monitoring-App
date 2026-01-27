@@ -49,6 +49,19 @@ dependencies:
   # Routing
   go_router: ^13.2.0
 
+  # UI Polish & Animations
+  google_fonts: ^6.2.0
+  flutter_animate: ^4.5.0
+
+  # Calendar for History
+  table_calendar: ^3.1.0
+
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+
+  # Vibration/Haptics
+  vibration: ^1.9.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

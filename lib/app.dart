@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
-import 'features/simulation/presentation/pages/simulation_panel_page.dart';
+import 'features/history/presentation/pages/history_page.dart';
+import 'features/device/presentation/pages/device_connection_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
 import 'core/constants/app_constants.dart';
+import 'core/theme/app_theme.dart';
 
-// Router configuration
+// Router configuration with 4 tabs
 final _router = GoRouter(
   initialLocation: '/',
   routes: [
@@ -17,22 +19,45 @@ final _router = GoRouter(
         GoRoute(
           path: '/',
           name: 'dashboard',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: DashboardPage(),
+          pageBuilder: (context, state) => CustomTransitionPage(
+            key: state.pageKey,
+            child: const DashboardPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
           ),
         ),
         GoRoute(
-          path: '/simulation',
-          name: 'simulation',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: SimulationPanelPage(),
+          path: '/history',
+          name: 'history',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            key: state.pageKey,
+            child: const HistoryPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          ),
+        ),
+        GoRoute(
+          path: '/device',
+          name: 'device',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            key: state.pageKey,
+            child: const DeviceConnectionPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
           ),
         ),
         GoRoute(
           path: '/settings',
           name: 'settings',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: SettingsPage(),
+          pageBuilder: (context, state) => CustomTransitionPage(
+            key: state.pageKey,
+            child: const SettingsPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
           ),
         ),
       ],
@@ -48,53 +73,14 @@ class StressMonitorApp extends ConsumerWidget {
     return MaterialApp.router(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: _buildTheme(),
-      darkTheme: _buildDarkTheme(),
-      themeMode: ThemeMode.dark,
+      theme: buildAppTheme(),
+      themeMode: ThemeMode.light,
       routerConfig: _router,
-    );
-  }
-
-  ThemeData _buildTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6366F1),
-        brightness: Brightness.light,
-      ),
-      fontFamily: 'Roboto',
-    );
-  }
-
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6366F1),
-        brightness: Brightness.dark,
-        surface: const Color(0xFF0F172A),
-        primary: const Color(0xFF6366F1),
-        secondary: const Color(0xFF22D3EE),
-        error: const Color(0xFFEF4444),
-      ),
-      scaffoldBackgroundColor: const Color(0xFF0F172A),
-      cardTheme: CardTheme(
-        color: const Color(0xFF1E293B),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0F172A),
-        elevation: 0,
-      ),
-      fontFamily: 'Roboto',
     );
   }
 }
 
-// Main shell with bottom navigation
+// Main shell with bottom navigation (4 tabs)
 class MainShell extends StatelessWidget {
   final Widget child;
 
@@ -104,28 +90,47 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _calculateSelectedIndex(context),
-        onDestinationSelected: (index) => _onItemTapped(index, context),
-        backgroundColor: const Color(0xFF1E293B),
-        indicatorColor: const Color(0xFF6366F1).withOpacity(0.2),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.tune_outlined),
-            selectedIcon: Icon(Icons.tune),
-            label: 'Simulation',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          selectedIndex: _calculateSelectedIndex(context),
+          onDestinationSelected: (index) => _onItemTapped(index, context),
+          backgroundColor: AppColors.surface,
+          indicatorColor: AppColors.accent.withOpacity(0.2),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          height: 70,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard, color: AppColors.accent),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.history_outlined),
+              selectedIcon: Icon(Icons.history, color: AppColors.accent),
+              label: 'History',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.bluetooth_outlined),
+              selectedIcon: Icon(Icons.bluetooth_connected, color: AppColors.accent),
+              label: 'Device',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings, color: AppColors.accent),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -133,8 +138,9 @@ class MainShell extends StatelessWidget {
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
     if (location == '/') return 0;
-    if (location.startsWith('/simulation')) return 1;
-    if (location.startsWith('/settings')) return 2;
+    if (location.startsWith('/history')) return 1;
+    if (location.startsWith('/device')) return 2;
+    if (location.startsWith('/settings')) return 3;
     return 0;
   }
 
@@ -144,9 +150,12 @@ class MainShell extends StatelessWidget {
         context.goNamed('dashboard');
         break;
       case 1:
-        context.goNamed('simulation');
+        context.goNamed('history');
         break;
       case 2:
+        context.goNamed('device');
+        break;
+      case 3:
         context.goNamed('settings');
         break;
     }

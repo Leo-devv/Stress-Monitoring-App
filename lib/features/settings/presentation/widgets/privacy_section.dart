@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class PrivacySection extends StatelessWidget {
   final bool dataCollectionEnabled;
@@ -22,39 +23,39 @@ class PrivacySection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.subtle,
       ),
       child: Column(
         children: [
           // Data Collection Toggle
           _buildSettingTile(
             icon: Icons.cloud_upload,
-            iconColor: const Color(0xFF3B82F6),
+            iconColor: AppColors.cloudMode,
             title: 'Data Collection',
             subtitle: 'Store analysis data in the cloud',
             trailing: Switch(
               value: dataCollectionEnabled,
               onChanged: onDataCollectionChanged,
-              activeColor: const Color(0xFF6366F1),
+              activeColor: AppColors.primary,
             ),
           ),
 
-          const Divider(height: 1, color: Colors.white10),
+          Divider(height: 1, color: AppColors.border),
 
           // Data Retention
           _buildSettingTile(
             icon: Icons.schedule,
-            iconColor: const Color(0xFFF59E0B),
+            iconColor: AppColors.stressElevated,
             title: 'Data Retention',
             subtitle: 'Keep data for $dataRetentionDays days',
             trailing: DropdownButton<int>(
               value: dataRetentionDays,
-              dropdownColor: const Color(0xFF334155),
+              dropdownColor: AppColors.surface,
               underline: const SizedBox(),
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
               items: [7, 14, 30, 60, 90].map((days) {
                 return DropdownMenuItem(
                   value: days,
@@ -67,31 +68,28 @@ class PrivacySection extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 1, color: Colors.white10),
+          Divider(height: 1, color: AppColors.border),
 
           // Export Data
           _buildSettingTile(
             icon: Icons.download,
-            iconColor: const Color(0xFF22C55E),
+            iconColor: AppColors.success,
             title: 'Export My Data',
             subtitle: 'Download all your data (GDPR)',
             trailing: IconButton(
-              icon: const Icon(
-                Icons.chevron_right,
-                color: Colors.white54,
-              ),
+              icon: Icon(Icons.chevron_right, color: AppColors.textMuted),
               onPressed: () {
-                // TODO: Implement data export
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Data export coming soon'),
+                  SnackBar(
+                    content: Text('Data export coming soon', style: AppTypography.bodyMedium),
+                    backgroundColor: AppColors.surfaceElevated,
                   ),
                 );
               },
             ),
           ),
 
-          const Divider(height: 1, color: Colors.white10),
+          Divider(height: 1, color: AppColors.border),
 
           // Nuke Data Button
           InkWell(
@@ -103,7 +101,7 @@ class PrivacySection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withOpacity(0.15),
+                      color: AppColors.danger.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: isDeletingData
@@ -112,12 +110,12 @@ class PrivacySection extends StatelessWidget {
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFFEF4444),
+                              color: AppColors.danger,
                             ),
                           )
                         : const Icon(
                             Icons.delete_forever,
-                            color: Color(0xFFEF4444),
+                            color: AppColors.danger,
                             size: 24,
                           ),
                   ),
@@ -126,29 +124,22 @@ class PrivacySection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Delete All My Data',
-                          style: TextStyle(
-                            color: Color(0xFFEF4444),
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: AppColors.danger,
                             fontWeight: FontWeight.w600,
-                            fontSize: 15,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Permanently remove all data (GDPR)',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 13,
-                          ),
+                          style: AppTypography.caption,
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFFEF4444),
-                  ),
+                  const Icon(Icons.chevron_right, color: AppColors.danger),
                 ],
               ),
             ),
@@ -172,35 +163,19 @@ class PrivacySection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.15),
+              color: iconColor.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 22,
-            ),
+            child: Icon(icon, color: iconColor, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                  ),
-                ),
+                Text(title, style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w500)),
                 const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
-                    fontSize: 13,
-                  ),
-                ),
+                Text(subtitle, style: AppTypography.caption),
               ],
             ),
           ),

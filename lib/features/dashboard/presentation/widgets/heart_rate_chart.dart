@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../domain/entities/sensor_reading.dart';
 import '../../../../core/constants/stress_thresholds.dart';
 
@@ -17,11 +18,10 @@ class HeartRateChart extends StatelessWidget {
       height: 200,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.subtle,
       ),
       child: readings.isEmpty
           ? _buildEmptyState()
@@ -40,22 +40,20 @@ class HeartRateChart extends StatelessWidget {
           Icon(
             Icons.show_chart,
             size: 48,
-            color: Colors.white.withOpacity(0.3),
+            color: AppColors.textMuted,
           ),
           const SizedBox(height: 12),
           Text(
             'Waiting for sensor data...',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 14,
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Start the simulation to see heart rate',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.3),
-              fontSize: 12,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textMuted,
             ),
           ),
         ],
@@ -83,7 +81,7 @@ class HeartRateChart extends StatelessWidget {
         drawVerticalLine: false,
         horizontalInterval: 20,
         getDrawingHorizontalLine: (value) => FlLine(
-          color: Colors.white.withOpacity(0.05),
+          color: AppColors.border.withOpacity(0.5),
           strokeWidth: 1,
         ),
       ),
@@ -105,10 +103,7 @@ class HeartRateChart extends StatelessWidget {
             getTitlesWidget: (value, meta) {
               return Text(
                 '${value.toInt()}',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 10,
-                ),
+                style: AppTypography.caption,
               );
             },
           ),
@@ -132,7 +127,7 @@ class HeartRateChart extends StatelessWidget {
             show: true,
             gradient: LinearGradient(
               colors: [
-                _getLineColor().withOpacity(0.3),
+                _getLineColor().withOpacity(0.25),
                 _getLineColor().withOpacity(0.0),
               ],
               begin: Alignment.topCenter,
@@ -143,14 +138,14 @@ class HeartRateChart extends StatelessWidget {
       ],
       lineTouchData: LineTouchData(
         touchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: const Color(0xFF334155),
+          tooltipBgColor: AppColors.surfaceElevated,
           tooltipRoundedRadius: 8,
           getTooltipItems: (touchedSpots) {
             return touchedSpots.map((spot) {
               return LineTooltipItem(
                 '${spot.y.toInt()} BPM',
-                const TextStyle(
-                  color: Colors.white,
+                AppTypography.label.copyWith(
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               );
@@ -162,16 +157,16 @@ class HeartRateChart extends StatelessWidget {
   }
 
   Color _getLineColor() {
-    if (readings.isEmpty) return const Color(0xFF6366F1);
+    if (readings.isEmpty) return AppColors.primary;
 
     final latestHr = readings.last.heartRate;
     if (latestHr > StressThresholds.hrHigh) {
-      return const Color(0xFFEF4444); // Red
+      return AppColors.stressHigh;
     } else if (latestHr > StressThresholds.hrElevated) {
-      return const Color(0xFFF59E0B); // Amber
+      return AppColors.stressElevated;
     } else if (latestHr > StressThresholds.hrRestingHigh) {
-      return const Color(0xFF22D3EE); // Cyan
+      return AppColors.stressNormal;
     }
-    return const Color(0xFF22C55E); // Green
+    return AppColors.stressLow;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 
 class AboutSection extends StatelessWidget {
@@ -9,11 +10,10 @@ class AboutSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.subtle,
       ),
       child: Column(
         children: [
@@ -23,38 +23,25 @@ class AboutSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryLight],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
-                  Icons.monitor_heart,
-                  color: Colors.white,
-                  size: 28,
-                ),
+                child: const Icon(Icons.monitor_heart, color: Colors.white, size: 28),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      AppConstants.appName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 2),
+                    Text(AppConstants.appName, style: AppTypography.h3),
+                    const SizedBox(height: 2),
                     Text(
                       'Version ${AppConstants.appVersion}',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 13,
-                      ),
+                      style: AppTypography.caption,
                     ),
                   ],
                 ),
@@ -63,14 +50,14 @@ class AboutSection extends StatelessWidget {
           ),
 
           const SizedBox(height: 20),
-          const Divider(color: Colors.white10),
+          Divider(color: AppColors.border),
           const SizedBox(height: 16),
 
           // Thesis Info
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: AppColors.surfaceElevated,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -78,29 +65,18 @@ class AboutSection extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.school,
-                      size: 18,
-                      color: Colors.white.withOpacity(0.6),
-                    ),
+                    Icon(Icons.school, size: 18, color: AppColors.textSecondary),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Engineering Thesis Project',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
+                      style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   '"The Role of AI in Personal Stress Monitoring: A Mobile Cloud Approach"',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 13,
-                    fontStyle: FontStyle.italic,
-                  ),
+                  style: AppTypography.bodySmall.copyWith(fontStyle: FontStyle.italic),
                 ),
               ],
             ),
@@ -109,41 +85,22 @@ class AboutSection extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Tech Stack
-          _buildInfoRow(
-            icon: Icons.phone_android,
-            label: 'Frontend',
-            value: 'Flutter',
-          ),
+          _buildInfoRow(icon: Icons.phone_android, label: 'Frontend', value: 'Flutter'),
           const SizedBox(height: 10),
-          _buildInfoRow(
-            icon: Icons.memory,
-            label: 'Edge AI',
-            value: 'TensorFlow Lite',
-          ),
+          _buildInfoRow(icon: Icons.memory, label: 'Edge AI', value: 'TensorFlow Lite'),
           const SizedBox(height: 10),
-          _buildInfoRow(
-            icon: Icons.cloud,
-            label: 'Cloud',
-            value: 'Firebase',
-          ),
+          _buildInfoRow(icon: Icons.cloud, label: 'Cloud', value: 'Firebase'),
           const SizedBox(height: 10),
-          _buildInfoRow(
-            icon: Icons.architecture,
-            label: 'Architecture',
-            value: 'Hybrid Edge/Cloud',
-          ),
+          _buildInfoRow(icon: Icons.architecture, label: 'Architecture', value: 'Hybrid Edge/Cloud'),
 
           const SizedBox(height: 20),
-          const Divider(color: Colors.white10),
+          Divider(color: AppColors.border),
           const SizedBox(height: 12),
 
           // Copyright
           Text(
-            '2024 - Built for thesis demonstration',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.4),
-              fontSize: 12,
-            ),
+            '2026 - Built for thesis demonstration',
+            style: AppTypography.caption,
           ),
         ],
       ),
@@ -157,26 +114,13 @@ class AboutSection extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.white.withOpacity(0.4),
-        ),
+        Icon(icon, size: 16, color: AppColors.textMuted),
         const SizedBox(width: 10),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
-            fontSize: 13,
-          ),
-        ),
+        Text(label, style: AppTypography.caption),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 13,
-          ),
+          style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w500),
         ),
       ],
     );

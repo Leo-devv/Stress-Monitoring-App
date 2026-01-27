@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../domain/entities/stress_assessment.dart';
 import '../../../../services/offloading_manager.dart';
 
@@ -15,40 +16,52 @@ class ProcessingModeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEdge = mode == ProcessingMode.edge;
-    final color = isEdge ? const Color(0xFF22C55E) : const Color(0xFF3B82F6);
+    final color = isEdge ? AppColors.edgeMode : AppColors.cloudMode;
     final icon = isEdge ? Icons.phone_android : Icons.cloud;
     final label = isEdge ? 'EDGE' : 'CLOUD';
+    final subtitle = isEdge ? 'On-Device AI' : 'Server AI';
 
     return GestureDetector(
       onTap: () => _showStatusDialog(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withOpacity(0.12),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withOpacity(0.5),
+            color: color.withOpacity(0.4),
             width: 1.5,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: color,
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: AppTypography.label.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTypography.caption.copyWith(
+                    color: color.withOpacity(0.8),
+                    fontSize: 9,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
+            const SizedBox(width: 4),
+            Icon(Icons.info_outline, size: 12, color: color.withOpacity(0.6)),
           ],
         ),
       ),
@@ -61,17 +74,17 @@ class ProcessingModeBadge extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info_outline, color: Color(0xFF6366F1)),
-            SizedBox(width: 12),
+            Icon(Icons.info_outline, color: AppColors.primary),
+            const SizedBox(width: 12),
             Text(
               'Processing Status',
-              style: TextStyle(fontSize: 18),
+              style: AppTypography.h3,
             ),
           ],
         ),
@@ -79,58 +92,89 @@ class ProcessingModeBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Explanation box at top
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'What does this mean?',
+                    style: AppTypography.label.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    offloadingStatus!.currentMode == ProcessingMode.edge
+                        ? 'Your stress is being analyzed BY YOUR PHONE using on-device AI. This is faster and works offline.'
+                        : 'Your stress is being analyzed ON A SERVER using cloud AI. This happens when you have WiFi.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             _buildStatusRow(
               'Mode',
               offloadingStatus!.currentMode == ProcessingMode.edge
                   ? 'Edge (On-Device)'
                   : 'Cloud (Firebase)',
               offloadingStatus!.currentMode == ProcessingMode.edge
-                  ? const Color(0xFF22C55E)
-                  : const Color(0xFF3B82F6),
+                  ? AppColors.edgeMode
+                  : AppColors.cloudMode,
             ),
             const SizedBox(height: 12),
             _buildStatusRow(
               'Battery',
               '${offloadingStatus!.batteryPercentage}%',
               offloadingStatus!.batteryLevel < 0.20
-                  ? const Color(0xFFEF4444)
-                  : const Color(0xFF22C55E),
+                  ? AppColors.danger
+                  : AppColors.success,
             ),
             const SizedBox(height: 12),
             _buildStatusRow(
               'WiFi',
               offloadingStatus!.isWifiConnected ? 'Connected' : 'Disconnected',
               offloadingStatus!.isWifiConnected
-                  ? const Color(0xFF22C55E)
-                  : const Color(0xFFF59E0B),
+                  ? AppColors.success
+                  : AppColors.stressElevated,
             ),
             const SizedBox(height: 12),
             _buildStatusRow(
               'Strategy',
               _getStrategyLabel(offloadingStatus!.strategy),
-              const Color(0xFF6366F1),
+              AppColors.primary,
             ),
             const SizedBox(height: 16),
+            // Why this mode was chosen
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: AppColors.surfaceElevated,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   Icon(
-                    Icons.lightbulb_outline,
+                    Icons.auto_awesome,
                     size: 16,
-                    color: Colors.white.withOpacity(0.5),
+                    color: AppColors.textMuted,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      offloadingStatus!.reason,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withOpacity(0.7),
+                      'Why: ${offloadingStatus!.reason}',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -142,7 +186,7 @@ class ProcessingModeBadge extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close', style: TextStyle(color: AppColors.primary)),
           ),
         ],
       ),
@@ -155,22 +199,20 @@ class ProcessingModeBadge extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
-            fontSize: 14,
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: valueColor.withOpacity(0.15),
+            color: valueColor.withOpacity(0.12),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             value,
-            style: TextStyle(
+            style: AppTypography.label.copyWith(
               color: valueColor,
-              fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../providers/settings_provider.dart';
 import '../../../simulation/providers/simulation_provider.dart';
 import '../widgets/privacy_section.dart';
@@ -14,26 +15,19 @@ class SettingsPage extends ConsumerWidget {
     final state = ref.watch(settingsProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        backgroundColor: AppColors.background,
+        title: Text('Settings', style: AppTypography.h2),
         centerTitle: false,
       ),
       body: SafeArea(
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.screenPadding,
           children: [
             // Offloading Strategy Section
-            const Text(
-              'Processing Strategy',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('Processing Strategy', style: AppTypography.h3),
             const SizedBox(height: 12),
             OffloadingSection(
               currentStrategy: state.offloadingStrategy,
@@ -50,13 +44,7 @@ class SettingsPage extends ConsumerWidget {
             const SizedBox(height: 32),
 
             // Privacy Section
-            const Text(
-              'Privacy & Data',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('Privacy & Data', style: AppTypography.h3),
             const SizedBox(height: 12),
             PrivacySection(
               dataCollectionEnabled: state.dataCollectionEnabled,
@@ -74,9 +62,9 @@ class SettingsPage extends ConsumerWidget {
                   await ref.read(settingsProvider.notifier).nukeAllData();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('All data has been deleted'),
-                        backgroundColor: Color(0xFF22C55E),
+                      SnackBar(
+                        content: Text('All data has been deleted', style: AppTypography.bodyMedium),
+                        backgroundColor: AppColors.success,
                       ),
                     );
                   }
@@ -87,13 +75,7 @@ class SettingsPage extends ConsumerWidget {
             const SizedBox(height: 32),
 
             // About Section
-            const Text(
-              'About',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('About', style: AppTypography.h3),
             const SizedBox(height: 12),
             const AboutSection(),
 
@@ -108,7 +90,7 @@ class SettingsPage extends ConsumerWidget {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1E293B),
+            backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -117,25 +99,20 @@ class SettingsPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.15),
+                    color: AppColors.danger.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.delete_forever,
-                    color: Color(0xFFEF4444),
-                  ),
+                  child: const Icon(Icons.delete_forever, color: AppColors.danger),
                 ),
                 const SizedBox(width: 12),
-                const Text('Delete All Data?'),
+                Text('Delete All Data?', style: AppTypography.h3),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'This action will permanently delete:',
-                ),
+                Text('This action will permanently delete:', style: AppTypography.bodyMedium),
                 const SizedBox(height: 12),
                 _buildDeleteItem('All local sensor readings'),
                 _buildDeleteItem('Stress analysis history'),
@@ -145,27 +122,18 @@ class SettingsPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    color: AppColors.dangerLight,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFFEF4444).withOpacity(0.3),
-                    ),
+                    border: Border.all(color: AppColors.danger.withOpacity(0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(
-                        Icons.warning_amber,
-                        color: Color(0xFFEF4444),
-                        size: 20,
-                      ),
-                      SizedBox(width: 8),
+                      const Icon(Icons.warning_amber, color: AppColors.danger, size: 20),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'This action cannot be undone!',
-                          style: TextStyle(
-                            color: Color(0xFFEF4444),
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTypography.label.copyWith(color: AppColors.danger),
                         ),
                       ),
                     ],
@@ -176,12 +144,12 @@ class SettingsPage extends ConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444),
+                  backgroundColor: AppColors.danger,
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Delete Everything'),
@@ -197,19 +165,9 @@ class SettingsPage extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(
-            Icons.remove_circle_outline,
-            size: 16,
-            color: Colors.white.withOpacity(0.5),
-          ),
+          Icon(Icons.remove_circle_outline, size: 16, color: AppColors.textMuted),
           const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 13,
-            ),
-          ),
+          Text(text, style: AppTypography.bodySmall),
         ],
       ),
     );

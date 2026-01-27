@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../domain/entities/sensor_reading.dart';
 import '../../../../domain/entities/stress_assessment.dart';
 
@@ -24,10 +25,10 @@ class LiveStatsCard extends StatelessWidget {
                 ? '${currentReading!.heartRate.toInt()}'
                 : '--',
             unit: 'BPM',
-            color: const Color(0xFFEF4444),
+            color: AppColors.heartRate,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _StatCard(
             icon: Icons.water_drop,
@@ -36,10 +37,10 @@ class LiveStatsCard extends StatelessWidget {
                 ? currentReading!.eda.toStringAsFixed(1)
                 : '--',
             unit: 'µS',
-            color: const Color(0xFF22D3EE),
+            color: AppColors.eda,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _StatCard(
             icon: Icons.thermostat,
@@ -48,7 +49,7 @@ class LiveStatsCard extends StatelessWidget {
                 ? currentReading!.temperature.toStringAsFixed(1)
                 : '--',
             unit: '°C',
-            color: const Color(0xFFF59E0B),
+            color: AppColors.temperature,
           ),
         ),
       ],
@@ -74,68 +75,63 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.subtle,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 11,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          // Icon with color indicator
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: color),
           ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 3),
-                child: Text(
-                  unit,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
-                    fontSize: 12,
+          const SizedBox(height: 8),
+          // Value
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: AppTypography.numeric.copyWith(
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 2),
+                Text(
+                  unit,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textMuted,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Label
+          Text(
+            label,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

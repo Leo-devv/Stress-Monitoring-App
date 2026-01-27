@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../services/offloading_manager.dart';
 
 class OffloadingSection extends StatelessWidget {
@@ -20,57 +21,86 @@ class OffloadingSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.subtle,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Strategy selector
-          const Text(
-            'Offloading Strategy',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 15,
-            ),
+          // Header with explanation
+          Row(
+            children: [
+              Icon(Icons.memory, size: 20, color: AppColors.primary),
+              const SizedBox(width: 10),
+              Text('AI Processing Mode', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Choose how the app decides between Edge and Cloud processing',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 13,
+          const SizedBox(height: 12),
+
+          // Explanation box
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'What is this?',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Your stress level is calculated by AI. Choose WHERE that AI runs:',
+                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 8),
+                _buildMiniExplain(Icons.phone_android, AppColors.edgeMode, 'EDGE', 'AI on your phone (fast, works offline)'),
+                const SizedBox(height: 4),
+                _buildMiniExplain(Icons.cloud, AppColors.cloudMode, 'CLOUD', 'AI on server (when WiFi available)'),
+              ],
             ),
           ),
           const SizedBox(height: 16),
 
           // Strategy options
           _buildStrategyOption(
-            title: 'Automatic',
-            description: 'Let the app decide based on battery and network',
+            title: 'Automatic (Recommended)',
+            description: 'Smart switching: Uses EDGE when battery low, CLOUD when on WiFi',
             icon: Icons.auto_mode,
-            color: const Color(0xFF6366F1),
+            color: AppColors.primary,
             isSelected: currentStrategy == OffloadingStrategy.auto,
             onTap: () => onStrategyChanged(OffloadingStrategy.auto),
           ),
           const SizedBox(height: 10),
           _buildStrategyOption(
-            title: 'Force Edge',
-            description: 'Always process on device (saves data)',
+            title: 'Always On-Device (EDGE)',
+            description: 'All processing on your phone. Best for privacy & offline use.',
             icon: Icons.phone_android,
-            color: const Color(0xFF22C55E),
+            color: AppColors.edgeMode,
             isSelected: currentStrategy == OffloadingStrategy.forceEdge,
             onTap: () => onStrategyChanged(OffloadingStrategy.forceEdge),
           ),
           const SizedBox(height: 10),
           _buildStrategyOption(
-            title: 'Force Cloud',
-            description: 'Always use cloud processing (best accuracy)',
+            title: 'Always Cloud (SERVER)',
+            description: 'Send data to server for analysis. Requires internet connection.',
             icon: Icons.cloud,
-            color: const Color(0xFF3B82F6),
+            color: AppColors.cloudMode,
             isSelected: currentStrategy == OffloadingStrategy.forceCloud,
             onTap: () => onStrategyChanged(OffloadingStrategy.forceCloud),
           ),
@@ -78,45 +108,30 @@ class OffloadingSection extends StatelessWidget {
           // Battery threshold slider (only shown for auto mode)
           if (currentStrategy == OffloadingStrategy.auto) ...[
             const SizedBox(height: 24),
-            const Divider(color: Colors.white10),
+            Divider(color: AppColors.border),
             const SizedBox(height: 16),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Battery Threshold',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Switch to Edge mode below this level',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                      ),
-                    ),
+                    Text('Battery Threshold', style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 2),
+                    Text('Switch to Edge mode below this level', style: AppTypography.caption),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.15),
+                    color: AppColors.primary.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '${(batteryThreshold * 100).round()}%',
-                    style: const TextStyle(
-                      color: Color(0xFF6366F1),
+                    style: AppTypography.label.copyWith(
+                      color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -126,9 +141,9 @@ class OffloadingSection extends StatelessWidget {
             const SizedBox(height: 12),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                activeTrackColor: const Color(0xFF6366F1),
-                inactiveTrackColor: Colors.white.withOpacity(0.1),
-                thumbColor: const Color(0xFF6366F1),
+                activeTrackColor: AppColors.primary,
+                inactiveTrackColor: AppColors.border,
+                thumbColor: AppColors.primary,
                 trackHeight: 6,
               ),
               child: Slider(
@@ -159,10 +174,10 @@ class OffloadingSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? color.withOpacity(0.08) : AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+            color: isSelected ? color.withOpacity(0.4) : AppColors.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -171,12 +186,12 @@ class OffloadingSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(isSelected ? 0.2 : 0.1),
+                color: color.withOpacity(isSelected ? 0.15 : 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? color : Colors.white.withOpacity(0.5),
+                color: isSelected ? color : AppColors.textMuted,
                 size: 22,
               ),
             ),
@@ -187,18 +202,12 @@ class OffloadingSection extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: AppTypography.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? color : Colors.white,
+                      color: isSelected ? color : AppColors.textPrimary,
                     ),
                   ),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
+                  Text(description, style: AppTypography.caption),
                 ],
               ),
             ),
@@ -211,6 +220,31 @@ class OffloadingSection extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMiniExplain(IconData icon, Color color, String label, String desc) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 6),
+        Text(
+          '$label: ',
+          style: AppTypography.caption.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            desc,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textMuted,
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

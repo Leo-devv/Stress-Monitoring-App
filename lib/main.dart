@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'app.dart';
 import 'services/sensor/simulator_source.dart';
@@ -32,6 +33,9 @@ void main() async {
     } else {
       debugPrint('Already signed in: ${auth.currentUser?.uid}');
     }
+
+    // Ensure users/{uid} document exists with a createdAt timestamp
+    await _ensureUserDocument(auth.currentUser?.uid);
   } catch (e) {
     debugPrint('Firebase not configured, running in offline mode: $e');
   }
@@ -47,4 +51,20 @@ void main() async {
       child: StressMonitorApp(),
     ),
   );
+}
+
+/// Creates the `users/{uid}` document with a server-side `createdAt`
+/// timestamp if it does not already exist.
+Future<void> _ensureUserDocument(String? uid) async {
+  if (uid == null) return;
+  try {
+    final docRef = FirebaseFirestore.instance.collection('users').doc(uid);
+    final snapshot = await docRef.get();
+    if (!snapshot.exists) {
+      await docRef.set({'createdAt': FieldValue.serverTimestamp()});
+      debugPrint('Created users/$uid document with createdAt');
+    }
+  } catch (e) {
+    debugPrint('User document check skipped: $e');
+  }
 }

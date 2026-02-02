@@ -13,6 +13,7 @@ import '../services/offloading_manager.dart';
 import '../services/edge_inference_service.dart';
 import '../services/cloud_inference_service.dart';
 import '../services/stress_analysis_service.dart';
+import '../services/sync_queue_service.dart';
 
 final sl = GetIt.instance;
 
@@ -70,8 +71,17 @@ Future<void> init() async {
     ),
   );
 
+  // Offline sync queue
+  sl.registerLazySingleton<SyncQueueService>(
+    () => SyncQueueService(cloudService: sl<CloudInferenceService>()),
+  );
+
   // Initialize services that need async setup
   await sl<EdgeInferenceService>().initialize();
   await sl<BaselineService>().initialize();
   await sl<NotificationService>().initialize();
+
+  // Initialize sync queue and wire it into cloud inference
+  await sl<SyncQueueService>().initialize();
+  sl<CloudInferenceService>().setSyncQueue(sl<SyncQueueService>());
 }

@@ -7,6 +7,9 @@ import 'package:equatable/equatable.dart';
 /// - SDNN: total variability
 /// - pNN50: percentage of successive intervals differing >50ms
 /// - Baevsky Stress Index: sympathetic/parasympathetic balance
+/// - LF Power: low-frequency band (0.04–0.15 Hz) – sympathetic + parasympathetic
+/// - HF Power: high-frequency band (0.15–0.4 Hz) – parasympathetic
+/// - LF/HF Ratio: sympatho-vagal balance index
 class HRVMetrics extends Equatable {
   final double rmssd;
   final double sdnn;
@@ -17,6 +20,11 @@ class HRVMetrics extends Equatable {
   final DateTime timestamp;
   final Duration windowDuration;
 
+  // Frequency-domain metrics (from Lomb-Scargle periodogram)
+  final double lfPower;
+  final double hfPower;
+  final double lfHfRatio;
+
   const HRVMetrics({
     required this.rmssd,
     required this.sdnn,
@@ -25,7 +33,10 @@ class HRVMetrics extends Equatable {
     required this.meanHeartRate,
     required this.sampleCount,
     required this.timestamp,
-    this.windowDuration = const Duration(minutes: 2),
+    this.windowDuration = const Duration(seconds: 60),
+    this.lfPower = 0.0,
+    this.hfPower = 0.0,
+    this.lfHfRatio = 0.0,
   });
 
   bool get hasSufficientData => sampleCount >= 10;
@@ -41,6 +52,34 @@ class HRVMetrics extends Equatable {
     return 0.95;
   }
 
+  HRVMetrics copyWith({
+    double? rmssd,
+    double? sdnn,
+    double? pnn50,
+    double? stressIndex,
+    int? meanHeartRate,
+    int? sampleCount,
+    DateTime? timestamp,
+    Duration? windowDuration,
+    double? lfPower,
+    double? hfPower,
+    double? lfHfRatio,
+  }) {
+    return HRVMetrics(
+      rmssd: rmssd ?? this.rmssd,
+      sdnn: sdnn ?? this.sdnn,
+      pnn50: pnn50 ?? this.pnn50,
+      stressIndex: stressIndex ?? this.stressIndex,
+      meanHeartRate: meanHeartRate ?? this.meanHeartRate,
+      sampleCount: sampleCount ?? this.sampleCount,
+      timestamp: timestamp ?? this.timestamp,
+      windowDuration: windowDuration ?? this.windowDuration,
+      lfPower: lfPower ?? this.lfPower,
+      hfPower: hfPower ?? this.hfPower,
+      lfHfRatio: lfHfRatio ?? this.lfHfRatio,
+    );
+  }
+
   Map<String, dynamic> toJson() => {
         'rmssd': rmssd,
         'sdnn': sdnn,
@@ -50,6 +89,9 @@ class HRVMetrics extends Equatable {
         'sampleCount': sampleCount,
         'timestamp': timestamp.toIso8601String(),
         'windowMs': windowDuration.inMilliseconds,
+        'lfPower': lfPower,
+        'hfPower': hfPower,
+        'lfHfRatio': lfHfRatio,
       };
 
   factory HRVMetrics.fromJson(Map<String, dynamic> json) {
@@ -62,8 +104,11 @@ class HRVMetrics extends Equatable {
       sampleCount: json['sampleCount'] as int,
       timestamp: DateTime.parse(json['timestamp'] as String),
       windowDuration: Duration(
-        milliseconds: json['windowMs'] as int? ?? 120000,
+        milliseconds: json['windowMs'] as int? ?? 60000,
       ),
+      lfPower: (json['lfPower'] as num?)?.toDouble() ?? 0.0,
+      hfPower: (json['hfPower'] as num?)?.toDouble() ?? 0.0,
+      lfHfRatio: (json['lfHfRatio'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -88,5 +133,8 @@ class HRVMetrics extends Equatable {
         meanHeartRate,
         sampleCount,
         timestamp,
+        lfPower,
+        hfPower,
+        lfHfRatio,
       ];
 }

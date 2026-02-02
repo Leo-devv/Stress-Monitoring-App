@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import '../domain/entities/rr_interval.dart';
 import '../domain/entities/hrv_metrics.dart';
+import 'lomb_scargle.dart';
 
 /// Computes Heart Rate Variability metrics from a stream of RR intervals.
 ///
@@ -10,6 +11,11 @@ import '../domain/entities/hrv_metrics.dart';
 ///  - SDNN   (total variability)
 ///  - pNN50  (parasympathetic index)
 ///  - Baevsky Stress Index (sympatho-vagal balance)
+///
+/// And frequency-domain analysis via Lomb-Scargle periodogram:
+///  - LF Power (0.04–0.15 Hz)
+///  - HF Power (0.15–0.4 Hz)
+///  - LF/HF Ratio
 ///
 /// Computation follows the Task Force of the European Society of Cardiology
 /// guidelines and matches the approach used by Kubios HRV software.
@@ -22,11 +28,14 @@ class HRVComputationService {
   Timer? _computeTimer;
 
   HRVComputationService({
-    this.windowDuration = const Duration(minutes: 2),
+    this.windowDuration = const Duration(seconds: 60),
     this.computeInterval = const Duration(seconds: 5),
   });
 
   Stream<HRVMetrics> get metricsStream => _metricsController.stream;
+
+  /// Exposes the current buffer for frequency-domain analysis.
+  List<RRInterval> get buffer => List.unmodifiable(_buffer);
 
   void addInterval(RRInterval rr) {
     if (!rr.isPhysiologicallyValid) return;
@@ -64,7 +73,61 @@ class HRVComputationService {
     if (_buffer.length < 10) return null;
 
     final intervals = _buffer.map((r) => r.milliseconds.toDouble()).toList();
-    return computeMetrics(intervals);
+    final timeDomain = computeMetrics(intervals);
+
+    // Compute frequency-domain via Lomb-Scargle
+    final freqDomain = _computeFrequencyDomain(_buffer);
+
+    return timeDomain.copyWith(
+      lfPower: freqDomain.$1,
+      hfPower: freqDomain.$2,
+      lfHfRatio: freqDomain.$3,
+    );
+  }
+
+  /// Computes frequency-domain HRV features from RR buffer using Lomb-Scargle.
+  ///
+  /// Returns (lfPower, hfPower, lfHfRatio).
+  (double, double, double) _computeFrequencyDomain(List<RRInterval> rrBuffer) {
+    if (rrBuffer.length < 20) return (0.0, 0.0, 0.0);
+
+    // Build cumulative timestamp array (seconds from first sample)
+    final t0 = rrBuffer.first.timestamp;
+    final timestamps = rrBuffer
+        .map((rr) => rr.timestamp.difference(t0).inMicroseconds / 1e6)
+        .toList();
+    final values = rrBuffer.map((rr) => rr.milliseconds.toDouble()).toList();
+
+    final frequencies = LombScargle.frequencyGrid(
+      fMin: 0.01,
+      fMax: 0.5,
+      nFrequencies: 256,
+    );
+
+    final psd = LombScargle.periodogram(
+      timestamps: timestamps,
+      values: values,
+      frequencies: frequencies,
+    );
+
+    // Integrate LF band (0.04–0.15 Hz)
+    final lf = LombScargle.bandPower(
+      frequencies: frequencies,
+      psd: psd,
+      fLow: 0.04,
+      fHigh: 0.15,
+    );
+
+    // Integrate HF band (0.15–0.4 Hz)
+    final hf = LombScargle.bandPower(
+      frequencies: frequencies,
+      psd: psd,
+      fLow: 0.15,
+      fHigh: 0.4,
+    );
+
+    final ratio = hf > 0 ? lf / hf : 0.0;
+    return (lf, hf, ratio);
   }
 
   /// Core computation from a list of RR interval durations (ms).
@@ -107,52 +170,6 @@ class HRVComputationService {
       timestamp: DateTime.now(),
       windowDuration: windowDuration,
     );
-  }
-
-  /// Converts HRV metrics to a 0-100 stress score.
-  ///
-  /// Uses an inverse mapping of RMSSD to stress:
-  ///   RMSSD >= 60ms   -> ~10-20 (relaxed)
-  ///   RMSSD ~40ms     -> ~35-45 (normal)
-  ///   RMSSD ~25ms     -> ~55-65 (elevated)
-  ///   RMSSD <= 15ms   -> ~80-95 (high stress)
-  ///
-  /// The Baevsky SI provides a secondary input.
-  static int computeStressScore(HRVMetrics metrics, {double? baselineRmssd}) {
-    if (!metrics.hasSufficientData) return 0;
-
-    final baseline = baselineRmssd ?? 42.0;
-
-    // RMSSD-based score (primary, 70% weight)
-    // Lower RMSSD = higher stress
-    final rmssdRatio = metrics.rmssd / baseline;
-    double rmssdScore;
-    if (rmssdRatio >= 1.4) {
-      rmssdScore = 10;
-    } else if (rmssdRatio >= 1.0) {
-      rmssdScore = 10 + (1.4 - rmssdRatio) * 75;
-    } else if (rmssdRatio >= 0.5) {
-      rmssdScore = 40 + (1.0 - rmssdRatio) * 80;
-    } else {
-      rmssdScore = 80 + (0.5 - rmssdRatio) * 40;
-    }
-
-    // Baevsky SI-based score (secondary, 30% weight)
-    // SI < 100 is relaxed, SI > 500 is highly stressed
-    final si = metrics.stressIndex.clamp(0, 1000);
-    double siScore;
-    if (si < 100) {
-      siScore = si / 100 * 25;
-    } else if (si < 250) {
-      siScore = 25 + (si - 100) / 150 * 25;
-    } else if (si < 500) {
-      siScore = 50 + (si - 250) / 250 * 25;
-    } else {
-      siScore = 75 + (si - 500) / 500 * 25;
-    }
-
-    final combined = rmssdScore * 0.7 + siScore * 0.3;
-    return combined.round().clamp(0, 100);
   }
 
   /// Baevsky Stress Index:  SI = AMo / (2 * VR * Mo)

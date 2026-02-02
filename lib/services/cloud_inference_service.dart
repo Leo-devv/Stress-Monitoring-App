@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../domain/entities/sensor_reading.dart';
 import '../domain/entities/stress_assessment.dart';
 import '../domain/entities/hrv_metrics.dart';
-import 'hrv_computation_service.dart';
+import 'threshold_stress_engine.dart';
+import 'sync_queue_service.dart';
 
 /// Service for performing cloud-based stress inference via Firebase.
 ///
@@ -12,38 +13,61 @@ import 'hrv_computation_service.dart';
 /// Cloud Firestore under the authenticated user's document path.
 class CloudInferenceService {
   bool _isAvailable = true;
+  SyncQueueService? _syncQueue;
 
   bool get isAvailable => _isAvailable;
 
-  /// Primary path: HRV-based cloud analysis.
+  /// Injects the sync queue so failed writes can be retried later.
+  void setSyncQueue(SyncQueueService queue) {
+    _syncQueue = queue;
+  }
+
+  /// Primary path: HRV-based cloud analysis via [ThresholdStressEngine].
   Future<StressAssessment> analyzeWithHRV(
     HRVMetrics metrics, {
     double? baselineRmssd,
+    double? baselineSdnn,
+    int? baselineHr,
   }) async {
     final stopwatch = Stopwatch()..start();
 
     // Simulate network round-trip latency to cloud
     await Future.delayed(const Duration(milliseconds: 200));
 
-    final score = HRVComputationService.computeStressScore(
+    // Build baseline if available
+    BaselineValues? baseline;
+    if (baselineRmssd != null) {
+      baseline = BaselineValues(
+        rmssd: baselineRmssd,
+        sdnn: baselineSdnn ?? 50.0,
+        meanHr: baselineHr ?? 72,
+      );
+    }
+
+    final result = ThresholdStressEngine.evaluate(
       metrics,
-      baselineRmssd: baselineRmssd,
+      baseline: baseline,
     );
 
     stopwatch.stop();
 
     final assessment = StressAssessment(
-      level: score,
+      level: result.score,
       timestamp: DateTime.now(),
       processedBy: ProcessingMode.cloud,
-      confidence: 0.95,
+      confidence: result.confidence,
       latencyMs: stopwatch.elapsedMilliseconds,
       rawScores: {
-        'rmssd': metrics.rmssd,
-        'sdnn': metrics.sdnn,
-        'stress_index': metrics.stressIndex,
+        for (final e in result.subscores.entries) e.key: e.value,
         'baseline_rmssd': baselineRmssd ?? 42.0,
-        'cloud_model_version': 2.0,
+      },
+      features: {
+        'sdnn': metrics.sdnn,
+        'rmssd': metrics.rmssd,
+        'pnn50': metrics.pnn50,
+        'lfPower': metrics.lfPower,
+        'hfPower': metrics.hfPower,
+        'lfHfRatio': metrics.lfHfRatio,
       },
     );
 
@@ -94,40 +118,30 @@ class CloudInferenceService {
 
   /// Persists a stress assessment to Cloud Firestore.
   ///
-  /// Writes to: users/{uid}/assessments/{auto-id}
-  /// Fails silently if Firebase is not configured or user is not signed in.
-  void _storeAssessment(StressAssessment assessment) {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        debugPrint('Firestore: skipping write — no authenticated user');
-        return;
-      }
-
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('assessments')
-          .add(assessment.toJson())
-          .then((_) => debugPrint('Firestore: assessment stored'))
-          .catchError((e) => debugPrint('Firestore write failed: $e'));
-    } catch (e) {
-      debugPrint('Firestore: not available ($e)');
+  /// Writes to: users/{uid}/stress_assessments/{auto-id}
+  /// Throws on failure so callers (e.g. sync queue) can catch and retry.
+  Future<void> storeAssessment(StressAssessment assessment) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('Firestore: skipping write — no authenticated user');
+      return;
     }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('stress_assessments')
+        .add(assessment.toJson());
+    debugPrint('Firestore: assessment stored');
   }
 
-  /// Stores a result explicitly (called from external services).
-  Future<void> storeResult(
-      StressAssessment assessment, String userId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('assessments')
-          .add(assessment.toJson());
-    } catch (e) {
-      debugPrint('Firestore storeResult failed: $e');
-    }
+  /// Fire-and-forget wrapper used internally after inference.
+  /// Falls back to the offline sync queue when the write fails.
+  void _storeAssessment(StressAssessment assessment) {
+    storeAssessment(assessment).catchError((e) {
+      debugPrint('Firestore write failed, queueing for sync: $e');
+      _syncQueue?.enqueue(assessment);
+    });
   }
 
   double _normalizeHeartRate(double hr) {

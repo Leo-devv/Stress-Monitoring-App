@@ -22,9 +22,6 @@ dependencies:
   cloud_functions: ^5.0.0
   firebase_auth: ^5.0.0
 
-  # On-device ML
-  tflite_flutter: ^0.11.0
-
   # Local Storage
   hive_flutter: ^1.1.0
   shared_preferences: ^2.2.2
@@ -49,6 +46,9 @@ dependencies:
 
   # Battery
   battery_plus: ^5.0.2
+
+  # Share (GDPR export)
+  share_plus: ^7.2.2
 
   # Routing
   go_router: ^13.2.0

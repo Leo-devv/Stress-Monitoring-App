@@ -1,116 +1,78 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
 import '../domain/entities/sensor_reading.dart';
 import '../domain/entities/stress_assessment.dart';
 import '../domain/entities/hrv_metrics.dart';
-import 'hrv_computation_service.dart';
+import 'threshold_stress_engine.dart';
 
-/// Service for performing on-device (Edge) stress inference using TensorFlow Lite.
+/// Service for performing on-device (Edge) stress inference.
 ///
-/// Loads a quantized stress classification model and runs inference on the
-/// device GPU (via delegate) with automatic CPU fallback.
+/// Uses the [ThresholdStressEngine] — a clinically-informed, rule-based
+/// classifier that scores all available HRV features against population
+/// norms and optional personal baselines.
 ///
 /// Two analysis paths:
-///  1. HRV-based (preferred): feeds RMSSD, SDNN, pNN50, Baevsky SI, mean HR
-///     into the TFLite model. Falls back to rule-based scoring if the model
-///     is unavailable.
+///  1. HRV-based (preferred): feeds all time-domain and frequency-domain
+///     HRV features into the threshold engine.
 ///  2. Sensor reading fallback: weighted HR/EDA/Temp for simulation mode.
 class EdgeInferenceService {
-  Interpreter? _interpreter;
   bool _isInitialized = false;
-  bool _modelLoaded = false;
 
   bool get isInitialized => _isInitialized;
-  bool get isModelLoaded => _modelLoaded;
 
   Future<void> initialize() async {
-    // Attempt to load TFLite model with GPU delegate, then CPU fallback
-    try {
-      final gpuOptions = InterpreterOptions()..addDelegate(GpuDelegateV2());
-      _interpreter = await Interpreter.fromAsset(
-        'models/stress_classifier.tflite',
-        options: gpuOptions,
-      );
-      _modelLoaded = true;
-      debugPrint('TFLite model loaded with GPU delegate');
-    } catch (gpuError) {
-      debugPrint('GPU delegate unavailable ($gpuError), trying CPU...');
-      try {
-        _interpreter = await Interpreter.fromAsset(
-          'models/stress_classifier.tflite',
-        );
-        _modelLoaded = true;
-        debugPrint('TFLite model loaded (CPU)');
-      } catch (cpuError) {
-        debugPrint('TFLite model not found, using rule-based fallback: $cpuError');
-        _modelLoaded = false;
-      }
-    }
     _isInitialized = true;
+    debugPrint('EdgeInferenceService: threshold engine ready');
   }
 
   /// Primary path: stress analysis from HRV metrics + personal baseline.
-  ///
-  /// When the TFLite model is available, feeds normalized HRV features into
-  /// the neural network. Otherwise falls back to the rule-based algorithm.
   Future<StressAssessment> analyzeWithHRV(
     HRVMetrics metrics, {
     double? baselineRmssd,
+    double? baselineSdnn,
+    int? baselineHr,
   }) async {
     if (!_isInitialized) await initialize();
 
     final stopwatch = Stopwatch()..start();
 
-    int score;
-    if (_modelLoaded && _interpreter != null) {
-      score = _runTFLiteInference(metrics);
-    } else {
-      score = HRVComputationService.computeStressScore(
-        metrics,
-        baselineRmssd: baselineRmssd,
+    // Build baseline if available
+    BaselineValues? baseline;
+    if (baselineRmssd != null) {
+      baseline = BaselineValues(
+        rmssd: baselineRmssd,
+        sdnn: baselineSdnn ?? 50.0,
+        meanHr: baselineHr ?? 72,
       );
     }
+
+    // Run the threshold engine over all features
+    final result = ThresholdStressEngine.evaluate(
+      metrics,
+      baseline: baseline,
+    );
 
     stopwatch.stop();
 
     return StressAssessment(
-      level: score,
+      level: result.score,
       timestamp: DateTime.now(),
       processedBy: ProcessingMode.edge,
-      confidence: metrics.confidence,
+      confidence: result.confidence,
       latencyMs: stopwatch.elapsedMilliseconds,
       rawScores: {
-        'rmssd': metrics.rmssd,
-        'sdnn': metrics.sdnn,
-        'stress_index': metrics.stressIndex,
+        for (final e in result.subscores.entries) e.key: e.value,
         'baseline_rmssd': baselineRmssd ?? 42.0,
-        'model_used': _modelLoaded ? 1.0 : 0.0,
+      },
+      features: {
+        'sdnn': metrics.sdnn,
+        'rmssd': metrics.rmssd,
+        'pnn50': metrics.pnn50,
+        'lfPower': metrics.lfPower,
+        'hfPower': metrics.hfPower,
+        'lfHfRatio': metrics.lfHfRatio,
       },
     );
-  }
-
-  /// Runs the TFLite stress classifier on normalized HRV features.
-  ///
-  /// Input tensor: [1, 5] — RMSSD, SDNN, pNN50, Baevsky SI, mean HR
-  /// Output tensor: [1, 1] — stress probability (0.0 = relaxed, 1.0 = stressed)
-  int _runTFLiteInference(HRVMetrics metrics) {
-    // Normalize features to [0, 1] ranges matching training distribution
-    final input = [
-      [
-        (metrics.rmssd / 100.0).clamp(0.0, 1.0),
-        (metrics.sdnn / 100.0).clamp(0.0, 1.0),
-        (metrics.pnn50 / 100.0).clamp(0.0, 1.0),
-        (metrics.stressIndex / 500.0).clamp(0.0, 1.0),
-        (metrics.meanHeartRate / 200.0).clamp(0.0, 1.0),
-      ]
-    ];
-
-    final output = [List<double>.filled(1, 0.0)];
-    _interpreter!.run(input, output);
-
-    // Model outputs stress probability [0, 1] → scale to 0-100
-    return (output[0][0] * 100).round().clamp(0, 100);
   }
 
   /// Fallback path: stress analysis from raw sensor reading (simulation).
@@ -188,9 +150,6 @@ class EdgeInferenceService {
   }
 
   void dispose() {
-    _interpreter?.close();
-    _interpreter = null;
     _isInitialized = false;
-    _modelLoaded = false;
   }
 }

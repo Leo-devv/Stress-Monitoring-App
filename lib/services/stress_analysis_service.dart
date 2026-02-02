@@ -39,9 +39,16 @@ class StressAnalysisService {
       _history.isNotEmpty ? _history.last : null;
 
   /// Analyzes stress from HRV metrics (preferred path).
+  ///
+  /// [acquisitionSource] – "ble", "camera", or "simulator".
+  /// [acquisitionDuration] – window duration in seconds.
   Future<StressAssessment> analyzeHRV(
     HRVMetrics metrics, {
     double? baselineRmssd,
+    double? baselineSdnn,
+    int? baselineHr,
+    String? acquisitionSource,
+    double? acquisitionDuration,
   }) async {
     final mode = await _offloadingManager.determineProcessingMode();
 
@@ -50,19 +57,33 @@ class StressAnalysisService {
       assessment = await _edgeService.analyzeWithHRV(
         metrics,
         baselineRmssd: baselineRmssd,
+        baselineSdnn: baselineSdnn,
+        baselineHr: baselineHr,
       );
     } else {
       try {
         assessment = await _cloudService.analyzeWithHRV(
           metrics,
           baselineRmssd: baselineRmssd,
+          baselineSdnn: baselineSdnn,
+          baselineHr: baselineHr,
         );
       } catch (_) {
         assessment = await _edgeService.analyzeWithHRV(
           metrics,
           baselineRmssd: baselineRmssd,
+          baselineSdnn: baselineSdnn,
+          baselineHr: baselineHr,
         );
       }
+    }
+
+    // Attach acquisition metadata
+    if (acquisitionSource != null || acquisitionDuration != null) {
+      assessment = assessment.copyWith(
+        acquisitionSource: acquisitionSource,
+        acquisitionDuration: acquisitionDuration,
+      );
     }
 
     _record(assessment);

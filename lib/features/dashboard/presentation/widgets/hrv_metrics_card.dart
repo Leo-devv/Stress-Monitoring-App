@@ -97,6 +97,54 @@ class HRVMetricsCard extends StatelessWidget {
             ],
           ),
 
+          // Frequency-domain metrics
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _MetricTile(
+                  label: 'LF Power',
+                  value: metrics != null
+                      ? metrics!.lfPower.toStringAsFixed(0)
+                      : '--',
+                  unit: 'ms\u00B2',
+                  icon: Icons.waves,
+                  color: AppColors.stressElevated,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MetricTile(
+                  label: 'HF Power',
+                  value: metrics != null
+                      ? metrics!.hfPower.toStringAsFixed(0)
+                      : '--',
+                  unit: 'ms\u00B2',
+                  icon: Icons.waves_outlined,
+                  color: AppColors.stressNormal,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _MetricTile(
+                  label: 'LF/HF',
+                  value: metrics != null
+                      ? metrics!.lfHfRatio.toStringAsFixed(2)
+                      : '--',
+                  unit: '',
+                  icon: Icons.balance,
+                  color: AppColors.accent,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+
           // Baseline comparison
           if (baselineDeviation != null) ...[
             const SizedBox(height: AppSpacing.md),

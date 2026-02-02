@@ -2,8 +2,8 @@ import 'package:equatable/equatable.dart';
 
 /// Processing mode for stress analysis
 enum ProcessingMode {
-  edge, // On-device TFLite processing
-  cloud, // Firebase Cloud Function processing
+  edge, // On-device threshold-based processing
+  cloud, // Cloud processing with Firestore persistence
 }
 
 /// Represents the result of a stress analysis
@@ -16,6 +16,13 @@ class StressAssessment extends Equatable {
   final int? latencyMs; // Inference latency in milliseconds
   final int? subjectiveRating; // User self-reported stress 1-10
 
+  /// Acquisition metadata
+  final String? acquisitionSource; // "ble" / "camera" / "simulator"
+  final double? acquisitionDuration; // seconds
+
+  /// Named HRV feature map (sdnn, rmssd, pnn50, lfPower, hfPower, lfHfRatio)
+  final Map<String, double>? features;
+
   const StressAssessment({
     required this.level,
     required this.timestamp,
@@ -24,6 +31,9 @@ class StressAssessment extends Equatable {
     this.rawScores,
     this.latencyMs,
     this.subjectiveRating,
+    this.acquisitionSource,
+    this.acquisitionDuration,
+    this.features,
   });
 
   /// Returns true if this is a high stress reading
@@ -36,6 +46,9 @@ class StressAssessment extends Equatable {
   String get processingModeLabel =>
       processedBy == ProcessingMode.edge ? 'EDGE' : 'CLOUD';
 
+  /// Categorical stress label required by the Firestore schema.
+  String get stressLevelLabel => level >= 50 ? 'stressed' : 'not_stressed';
+
   StressAssessment copyWith({
     int? level,
     DateTime? timestamp,
@@ -44,6 +57,9 @@ class StressAssessment extends Equatable {
     Map<String, double>? rawScores,
     int? latencyMs,
     int? subjectiveRating,
+    String? acquisitionSource,
+    double? acquisitionDuration,
+    Map<String, double>? features,
   }) {
     return StressAssessment(
       level: level ?? this.level,
@@ -53,18 +69,26 @@ class StressAssessment extends Equatable {
       rawScores: rawScores ?? this.rawScores,
       latencyMs: latencyMs ?? this.latencyMs,
       subjectiveRating: subjectiveRating ?? this.subjectiveRating,
+      acquisitionSource: acquisitionSource ?? this.acquisitionSource,
+      acquisitionDuration: acquisitionDuration ?? this.acquisitionDuration,
+      features: features ?? this.features,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'level': level,
+      'stressLevel': stressLevelLabel,
       'timestamp': timestamp.toIso8601String(),
       'processedBy': processedBy.name,
       'confidence': confidence,
       'rawScores': rawScores,
       'latencyMs': latencyMs,
       'subjectiveRating': subjectiveRating,
+      if (acquisitionSource != null) 'acquisitionSource': acquisitionSource,
+      if (acquisitionDuration != null)
+        'acquisitionDuration': acquisitionDuration,
+      if (features != null) 'features': features,
     };
   }
 
@@ -79,10 +103,26 @@ class StressAssessment extends Equatable {
           : null,
       latencyMs: json['latencyMs'] as int?,
       subjectiveRating: json['subjectiveRating'] as int?,
+      acquisitionSource: json['acquisitionSource'] as String?,
+      acquisitionDuration:
+          (json['acquisitionDuration'] as num?)?.toDouble(),
+      features: json['features'] != null
+          ? Map<String, double>.from(json['features'] as Map)
+          : null,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [level, timestamp, processedBy, confidence, rawScores, latencyMs, subjectiveRating];
+  List<Object?> get props => [
+        level,
+        timestamp,
+        processedBy,
+        confidence,
+        rawScores,
+        latencyMs,
+        subjectiveRating,
+        acquisitionSource,
+        acquisitionDuration,
+        features,
+      ];
 }

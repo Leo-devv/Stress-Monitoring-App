@@ -167,35 +167,36 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     await _notificationService.evaluateStressReading(assessment.level);
   }
 
-  void _onHRVMetrics(HRVMetrics metrics) {
-    // Compute HRV-based stress score
-    final hrvStressScore = HRVComputationService.computeStressScore(
-      metrics,
-      baselineRmssd: _baselineService.baselineRmssd,
-    );
+  /// Maps the active sensor source type to a short acquisition label.
+  String _acquisitionSourceLabel() {
+    switch (state.activeSourceType) {
+      case SensorSourceType.ble:
+        return 'ble';
+      case SensorSourceType.cameraPpg:
+        return 'camera';
+      case SensorSourceType.simulator:
+      case null:
+        return 'simulator';
+    }
+  }
 
-    // Compute baseline deviation
+  Future<void> _onHRVMetrics(HRVMetrics metrics) async {
+    // Compute baseline deviation and record for learning
     final deviation = _baselineService.deviationPercent(metrics);
-
-    // Record measurement for baseline learning
     _baselineService.recordMeasurement(metrics);
 
-    // If we have HRV data, prefer HRV-based stress score
-    final hrvAssessment = StressAssessment(
-      level: hrvStressScore,
-      timestamp: metrics.timestamp,
-      processedBy: state.processingMode,
-      confidence: metrics.confidence,
-      rawScores: {
-        'rmssd': metrics.rmssd,
-        'sdnn': metrics.sdnn,
-        'pnn50': metrics.pnn50,
-        'stress_index': metrics.stressIndex,
-        'baseline_rmssd': _baselineService.baselineRmssd,
-      },
+    // Route through the analysis service so the edge/cloud decision,
+    // Firestore persistence, and sync-queue fallback all work correctly.
+    final assessment = await _analysisService.analyzeHRV(
+      metrics,
+      baselineRmssd: _baselineService.baselineRmssd,
+      baselineSdnn: _baselineService.baselineSdnn,
+      baselineHr: _baselineService.baselineHr,
+      acquisitionSource: _acquisitionSourceLabel(),
+      acquisitionDuration: _hrvService.windowDuration.inSeconds.toDouble(),
     );
 
-    final newStressHistory = [...state.stressHistory, hrvAssessment];
+    final newStressHistory = [...state.stressHistory, assessment];
     if (newStressHistory.length > maxHistorySize) {
       newStressHistory.removeAt(0);
     }
@@ -203,12 +204,12 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(
       currentHRV: metrics,
       baselineDeviation: deviation,
-      currentStress: hrvAssessment,
+      currentStress: assessment,
       stressHistory: newStressHistory,
     );
 
     // Evaluate notification with HRV-based score
-    _notificationService.evaluateStressReading(hrvStressScore);
+    _notificationService.evaluateStressReading(assessment.level);
   }
 
   Future<void> _updateOffloadingStatus() async {

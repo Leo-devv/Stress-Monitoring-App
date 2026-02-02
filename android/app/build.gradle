@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.stressmonitor.stress_monitor_app"
-    compileSdk flutter.compileSdkVersion
+    compileSdk 35
     ndkVersion "25.1.8937393"
 
     compileOptions {
@@ -42,14 +42,16 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.stressmonitor.stress_monitor_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    aaptOptions {
+        noCompress 'tflite'
     }
 
     buildTypes {

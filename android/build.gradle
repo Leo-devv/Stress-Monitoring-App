@@ -13,6 +13,17 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+// Provide 'flutter' SDK version properties to library plugins that
+// reference flutter.compileSdkVersion (e.g. flutter_blue_plus_android).
+// This block runs before each sub-project's build.gradle is evaluated.
+subprojects {
+    ext.set('flutter', [
+        compileSdkVersion: 35,
+        minSdkVersion    : 21,
+        targetSdkVersion : 35,
+    ])
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

@@ -6,10 +6,12 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/history/presentation/pages/history_page.dart';
 import 'features/device/presentation/pages/device_connection_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
+import 'features/breathing/presentation/pages/breathing_exercise_page.dart';
+import 'features/simulation/presentation/pages/simulation_panel_page.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 
-// Router configuration with 4 tabs
+// Router configuration with 4 tabs + overlay routes
 final _router = GoRouter(
   initialLocation: '/',
   routes: [
@@ -22,7 +24,8 @@ final _router = GoRouter(
           pageBuilder: (context, state) => CustomTransitionPage(
             key: state.pageKey,
             child: const DashboardPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),
@@ -33,7 +36,8 @@ final _router = GoRouter(
           pageBuilder: (context, state) => CustomTransitionPage(
             key: state.pageKey,
             child: const HistoryPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),
@@ -44,7 +48,8 @@ final _router = GoRouter(
           pageBuilder: (context, state) => CustomTransitionPage(
             key: state.pageKey,
             child: const DeviceConnectionPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),
@@ -55,12 +60,57 @@ final _router = GoRouter(
           pageBuilder: (context, state) => CustomTransitionPage(
             key: state.pageKey,
             child: const SettingsPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),
         ),
       ],
+    ),
+
+    // Full-screen routes outside the shell (no bottom nav)
+    GoRoute(
+      path: '/breathing',
+      name: 'breathing',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const BreathingExercisePage(),
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/simulation',
+      name: 'simulation',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const SimulationPanelPage(),
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      ),
     ),
   ],
 );
@@ -95,7 +145,7 @@ class MainShell extends StatelessWidget {
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha(12),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -105,7 +155,7 @@ class MainShell extends StatelessWidget {
           selectedIndex: _calculateSelectedIndex(context),
           onDestinationSelected: (index) => _onItemTapped(index, context),
           backgroundColor: AppColors.surface,
-          indicatorColor: AppColors.accent.withOpacity(0.2),
+          indicatorColor: AppColors.accent.withAlpha(50),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           height: 70,
           destinations: const [
@@ -121,7 +171,8 @@ class MainShell extends StatelessWidget {
             ),
             NavigationDestination(
               icon: Icon(Icons.bluetooth_outlined),
-              selectedIcon: Icon(Icons.bluetooth_connected, color: AppColors.accent),
+              selectedIcon:
+                  Icon(Icons.bluetooth_connected, color: AppColors.accent),
               label: 'Device',
             ),
             NavigationDestination(

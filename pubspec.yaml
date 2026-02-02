@@ -20,6 +20,10 @@ dependencies:
   firebase_core: ^2.27.0
   cloud_firestore: ^4.15.0
   cloud_functions: ^4.6.0
+  firebase_auth: ^4.17.0
+
+  # On-device ML
+  tflite_flutter: ^0.10.4
 
   # Local Storage
   hive_flutter: ^1.1.0
@@ -59,8 +63,10 @@ dependencies:
   # Notifications
   flutter_local_notifications: ^17.0.0
 
-  # Vibration/Haptics
-  vibration: ^1.9.0
+  # Real Sensor Input
+  flutter_blue_plus: ^1.31.0
+  camera: ^0.11.0+2
+  wakelock_plus: ^1.2.0
 
 dev_dependencies:
   flutter_test:

@@ -41,3 +41,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Windows stray files
+nul
+android/nul
+run_gradle.bat

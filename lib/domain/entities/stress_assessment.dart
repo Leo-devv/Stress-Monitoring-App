@@ -13,6 +13,8 @@ class StressAssessment extends Equatable {
   final ProcessingMode processedBy;
   final double confidence; // Model confidence 0-1
   final Map<String, double>? rawScores; // Optional detailed scores
+  final int? latencyMs; // Inference latency in milliseconds
+  final int? subjectiveRating; // User self-reported stress 1-10
 
   const StressAssessment({
     required this.level,
@@ -20,6 +22,8 @@ class StressAssessment extends Equatable {
     required this.processedBy,
     this.confidence = 1.0,
     this.rawScores,
+    this.latencyMs,
+    this.subjectiveRating,
   });
 
   /// Returns true if this is a high stress reading
@@ -38,6 +42,8 @@ class StressAssessment extends Equatable {
     ProcessingMode? processedBy,
     double? confidence,
     Map<String, double>? rawScores,
+    int? latencyMs,
+    int? subjectiveRating,
   }) {
     return StressAssessment(
       level: level ?? this.level,
@@ -45,6 +51,8 @@ class StressAssessment extends Equatable {
       processedBy: processedBy ?? this.processedBy,
       confidence: confidence ?? this.confidence,
       rawScores: rawScores ?? this.rawScores,
+      latencyMs: latencyMs ?? this.latencyMs,
+      subjectiveRating: subjectiveRating ?? this.subjectiveRating,
     );
   }
 
@@ -55,6 +63,8 @@ class StressAssessment extends Equatable {
       'processedBy': processedBy.name,
       'confidence': confidence,
       'rawScores': rawScores,
+      'latencyMs': latencyMs,
+      'subjectiveRating': subjectiveRating,
     };
   }
 
@@ -67,10 +77,12 @@ class StressAssessment extends Equatable {
       rawScores: json['rawScores'] != null
           ? Map<String, double>.from(json['rawScores'] as Map)
           : null,
+      latencyMs: json['latencyMs'] as int?,
+      subjectiveRating: json['subjectiveRating'] as int?,
     );
   }
 
   @override
   List<Object?> get props =>
-      [level, timestamp, processedBy, confidence, rawScores];
+      [level, timestamp, processedBy, confidence, rawScores, latencyMs, subjectiveRating];
 }

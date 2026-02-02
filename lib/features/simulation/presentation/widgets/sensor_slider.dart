@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class SensorSlider extends StatelessWidget {
   final String label;
@@ -31,10 +32,10 @@ class SensorSlider extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: enabled ? color.withOpacity(0.3) : Colors.white.withOpacity(0.1),
+          color: enabled ? color.withAlpha(80) : AppColors.borderSubtle,
         ),
       ),
       child: Column(
@@ -45,12 +46,12 @@ class SensorSlider extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(enabled ? 0.15 : 0.05),
+                  color: color.withAlpha(enabled ? 30 : 12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   icon,
-                  color: enabled ? color : Colors.white.withOpacity(0.3),
+                  color: enabled ? color : AppColors.textDisabled,
                   size: 20,
                 ),
               ),
@@ -58,10 +59,11 @@ class SensorSlider extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: enabled ? Colors.white : Colors.white.withOpacity(0.5),
+                    color: enabled
+                        ? AppColors.textPrimary
+                        : AppColors.textDisabled,
                   ),
                 ),
               ),
@@ -71,14 +73,13 @@ class SensorSlider extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(enabled ? 0.15 : 0.05),
+                  color: color.withAlpha(enabled ? 30 : 12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${value.toStringAsFixed(1)} $unit',
-                  style: TextStyle(
-                    color: enabled ? color : Colors.white.withOpacity(0.3),
-                    fontSize: 14,
+                  style: AppTypography.label.copyWith(
+                    color: enabled ? color : AppColors.textDisabled,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -88,10 +89,10 @@ class SensorSlider extends StatelessWidget {
           const SizedBox(height: 16),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: enabled ? color : Colors.white.withOpacity(0.1),
-              inactiveTrackColor: Colors.white.withOpacity(0.1),
-              thumbColor: enabled ? color : Colors.white.withOpacity(0.3),
-              overlayColor: color.withOpacity(0.2),
+              activeTrackColor: enabled ? color : AppColors.border,
+              inactiveTrackColor: AppColors.border,
+              thumbColor: enabled ? color : AppColors.textDisabled,
+              overlayColor: color.withAlpha(50),
               trackHeight: 6,
               thumbShape: const RoundSliderThumbShape(
                 enabledThumbRadius: 10,
@@ -112,17 +113,11 @@ class SensorSlider extends StatelessWidget {
               children: [
                 Text(
                   '${min.toInt()} $unit',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
+                  style: AppTypography.caption,
                 ),
                 Text(
                   '${max.toInt()} $unit',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
+                  style: AppTypography.caption,
                 ),
               ],
             ),

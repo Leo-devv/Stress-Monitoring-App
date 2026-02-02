@@ -1,7 +1,39 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutter create:*)"
+      "Bash(flutter create:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter run:*)",
+      "Bash(cmd /c \"gradlew.bat clean\")",
+      "Bash(powershell -Command \"$env:JAVA_HOME='C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr'; cd 'C:\\\\Users\\\\Rea\\\\Downloads\\\\Stress Monitoring App\\\\android'; .\\\\gradlew.bat clean\":*)",
+      "Bash(cmd /c \"C:\\\\Users\\\\Rea\\\\Downloads\\\\Stress Monitoring App\\\\run_gradle.bat\")",
+      "Bash(flutter config:*)",
+      "Bash(flutter devices:*)",
+      "Bash(flutter emulators:*)",
+      "Bash(\"C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\sdk\\\\platform-tools\\\\adb.exe\" devices -l)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "WebSearch",
+      "Bash(\"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\bin\\\\java\" -version)",
+      "Bash(\"C:\\\\ProgramData\\\\Oracle\\\\Java\\\\javapath\\\\java.exe\" -version)",
+      "Bash(./gradlew:*)",
+      "Bash(printenv:*)",
+      "Bash(setx JAVA_HOME \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\")",
+      "Bash(gradle:*)",
+      "Bash(flutter clean:*)",
+      "Bash(adb kill-server:*)",
+      "Bash(adb start-server:*)",
+      "Bash(ping:*)",
+      "Bash(adb devices:*)",
+      "Bash(cmd /c \"C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe kill-server && C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe start-server && C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe devices\")",
+      "Bash(flutter build:*)",
+      "Bash(start \"\" \"C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe\" -avd Medium_Phone_API_36.1 -no-snapshot-load)",
+      "Bash(\"C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" devices)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c \"start /b C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe -avd Medium_Phone_API_36.1 -gpu swiftshader_indirect -no-snapshot\")",
+      "Bash(xargs find -type d)"
     ]
   }
 }

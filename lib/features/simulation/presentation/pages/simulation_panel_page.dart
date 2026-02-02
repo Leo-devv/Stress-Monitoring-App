@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../providers/simulation_provider.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../widgets/sensor_slider.dart';
@@ -16,24 +17,26 @@ class SimulationPanelPage extends ConsumerWidget {
     final dashboardNotifier = ref.read(dashboardProvider.notifier);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'Simulation Control',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        backgroundColor: AppColors.background,
+        title: Text('Simulation Control', style: AppTypography.h3),
         centerTitle: false,
         actions: [
           TextButton.icon(
             onPressed: notifier.resetToDefaults,
-            icon: const Icon(Icons.restart_alt, size: 18),
-            label: const Text('Reset'),
+            icon: const Icon(Icons.restart_alt,
+                size: 18, color: AppColors.textSecondary),
+            label: Text('Reset',
+                style: AppTypography.label
+                    .copyWith(color: AppColors.textSecondary)),
           ),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.screenPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -41,25 +44,20 @@ class SimulationPanelPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.15),
+                  color: AppColors.primary.withAlpha(25),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
-                  ),
+                  border: Border.all(color: AppColors.primary.withAlpha(60)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.science,
-                      color: Color(0xFF6366F1),
-                    ),
+                    const Icon(Icons.science, color: AppColors.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Use these controls to simulate different stress scenarios for your thesis demo.',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 13,
+                        'Use these controls to simulate different stress '
+                        'scenarios for your thesis demo.',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -70,13 +68,7 @@ class SimulationPanelPage extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Preset Buttons
-              const Text(
-                'Quick Presets',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('Quick Presets', style: AppTypography.h3),
               const SizedBox(height: 12),
               PresetButtons(
                 onPresetSelected: (preset) {
@@ -90,27 +82,15 @@ class SimulationPanelPage extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Sensor Values',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Text('Sensor Values', style: AppTypography.h3),
                   Row(
                     children: [
-                      Text(
-                        'Manual Override',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 12,
-                        ),
-                      ),
+                      Text('Manual Override', style: AppTypography.caption),
                       const SizedBox(width: 8),
                       Switch(
                         value: state.useManualValues,
                         onChanged: notifier.setUseManualValues,
-                        activeColor: const Color(0xFF6366F1),
+                        activeColor: AppColors.primary,
                       ),
                     ],
                   ),
@@ -126,7 +106,7 @@ class SimulationPanelPage extends ConsumerWidget {
                 max: 180,
                 unit: 'BPM',
                 icon: Icons.favorite,
-                color: const Color(0xFFEF4444),
+                color: AppColors.heartRate,
                 enabled: state.useManualValues,
                 onChanged: notifier.setHeartRate,
                 divisions: 140,
@@ -142,7 +122,7 @@ class SimulationPanelPage extends ConsumerWidget {
                 max: 15,
                 unit: 'µS',
                 icon: Icons.water_drop,
-                color: const Color(0xFF22D3EE),
+                color: AppColors.eda,
                 enabled: state.useManualValues,
                 onChanged: notifier.setEda,
                 divisions: 150,
@@ -158,7 +138,7 @@ class SimulationPanelPage extends ConsumerWidget {
                 max: 40,
                 unit: '°C',
                 icon: Icons.thermostat,
-                color: const Color(0xFFF59E0B),
+                color: AppColors.temperature,
                 enabled: state.useManualValues,
                 onChanged: notifier.setTemperature,
                 divisions: 100,
@@ -167,13 +147,7 @@ class SimulationPanelPage extends ConsumerWidget {
               const SizedBox(height: 32),
 
               // Environment Controls
-              const Text(
-                'Environment Simulation',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('Environment Simulation', style: AppTypography.h3),
               const SizedBox(height: 16),
               EnvironmentControls(
                 batteryLevel: state.batteryLevel,
@@ -195,19 +169,19 @@ class SimulationPanelPage extends ConsumerWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.button,
                     ),
                   ),
                   icon: const Icon(Icons.send),
-                  label: const Text(
+                  label: Text(
                     'Inject Reading',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTypography.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),

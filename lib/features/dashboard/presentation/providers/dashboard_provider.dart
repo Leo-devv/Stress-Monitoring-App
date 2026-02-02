@@ -2,7 +2,13 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/entities/sensor_reading.dart';
 import '../../../../domain/entities/stress_assessment.dart';
+import '../../../../domain/entities/hrv_metrics.dart';
 import '../../../../services/sensor_simulator_service.dart';
+import '../../../../services/sensor/sensor_manager.dart';
+import '../../../../services/sensor/heart_rate_source.dart';
+import '../../../../services/hrv_computation_service.dart';
+import '../../../../services/baseline_service.dart';
+import '../../../../services/notification_service.dart';
 import '../../../../services/offloading_manager.dart';
 import '../../../../services/stress_analysis_service.dart';
 import '../../../../di/injection_container.dart';
@@ -18,6 +24,11 @@ class DashboardState {
   final OffloadingStatus? offloadingStatus;
   final bool isLoading;
 
+  // HRV-aware fields
+  final HRVMetrics? currentHRV;
+  final SensorSourceType? activeSourceType;
+  final double? baselineDeviation;
+
   const DashboardState({
     this.sensorHistory = const [],
     this.stressHistory = const [],
@@ -27,6 +38,9 @@ class DashboardState {
     this.isSimulationRunning = false,
     this.offloadingStatus,
     this.isLoading = false,
+    this.currentHRV,
+    this.activeSourceType,
+    this.baselineDeviation,
   });
 
   DashboardState copyWith({
@@ -38,6 +52,9 @@ class DashboardState {
     bool? isSimulationRunning,
     OffloadingStatus? offloadingStatus,
     bool? isLoading,
+    HRVMetrics? currentHRV,
+    SensorSourceType? activeSourceType,
+    double? baselineDeviation,
   }) {
     return DashboardState(
       sensorHistory: sensorHistory ?? this.sensorHistory,
@@ -48,6 +65,9 @@ class DashboardState {
       isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
       offloadingStatus: offloadingStatus ?? this.offloadingStatus,
       isLoading: isLoading ?? this.isLoading,
+      currentHRV: currentHRV ?? this.currentHRV,
+      activeSourceType: activeSourceType ?? this.activeSourceType,
+      baselineDeviation: baselineDeviation ?? this.baselineDeviation,
     );
   }
 }
@@ -57,9 +77,15 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   final SensorSimulatorService _sensorService;
   final StressAnalysisService _analysisService;
   final OffloadingManager _offloadingManager;
+  final SensorManager _sensorManager;
+  final HRVComputationService _hrvService;
+  final BaselineService _baselineService;
+  final NotificationService _notificationService;
 
   StreamSubscription<SensorReading>? _sensorSubscription;
   StreamSubscription<ProcessingMode>? _modeSubscription;
+  StreamSubscription<HRVMetrics>? _hrvSubscription;
+  StreamSubscription<SensorSourceType>? _sourceSubscription;
 
   static const int maxHistorySize = 60;
 
@@ -67,23 +93,50 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     required SensorSimulatorService sensorService,
     required StressAnalysisService analysisService,
     required OffloadingManager offloadingManager,
+    required SensorManager sensorManager,
+    required HRVComputationService hrvService,
+    required BaselineService baselineService,
+    required NotificationService notificationService,
   })  : _sensorService = sensorService,
         _analysisService = analysisService,
         _offloadingManager = offloadingManager,
+        _sensorManager = sensorManager,
+        _hrvService = hrvService,
+        _baselineService = baselineService,
+        _notificationService = notificationService,
         super(const DashboardState()) {
     _initializeSubscriptions();
     _updateOffloadingStatus();
   }
 
   void _initializeSubscriptions() {
-    // Listen to sensor readings
-    _sensorSubscription = _sensorService.sensorStream.listen(_onSensorReading);
+    // Listen to legacy sensor readings (BVP/EDA/temp from simulator)
+    _sensorSubscription =
+        _sensorService.sensorStream.listen(_onSensorReading);
 
     // Listen to processing mode changes
     _modeSubscription = _offloadingManager.modeStream.listen((mode) {
       state = state.copyWith(processingMode: mode);
       _updateOffloadingStatus();
     });
+
+    // Feed RR intervals from SensorManager into HRV computation
+    _sensorManager.rrIntervalStream.listen((rr) {
+      _hrvService.addInterval(rr);
+    });
+
+    // Listen to computed HRV metrics
+    _hrvSubscription =
+        _hrvService.metricsStream.listen(_onHRVMetrics);
+
+    // Listen to source changes
+    _sourceSubscription =
+        _sensorManager.sourceChangeStream.listen((sourceType) {
+      state = state.copyWith(activeSourceType: sourceType);
+    });
+
+    // Start periodic HRV computation
+    _hrvService.startPeriodicComputation();
   }
 
   Future<void> _onSensorReading(SensorReading reading) async {
@@ -93,7 +146,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       newSensorHistory.removeAt(0);
     }
 
-    // Analyze stress
+    // Analyze stress with the traditional algorithm
     final assessment = await _analysisService.analyze(reading);
 
     // Update stress history
@@ -109,6 +162,53 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       currentStress: assessment,
       processingMode: assessment.processedBy,
     );
+
+    // Evaluate whether to fire a notification
+    await _notificationService.evaluateStressReading(assessment.level);
+  }
+
+  void _onHRVMetrics(HRVMetrics metrics) {
+    // Compute HRV-based stress score
+    final hrvStressScore = HRVComputationService.computeStressScore(
+      metrics,
+      baselineRmssd: _baselineService.baselineRmssd,
+    );
+
+    // Compute baseline deviation
+    final deviation = _baselineService.deviationPercent(metrics);
+
+    // Record measurement for baseline learning
+    _baselineService.recordMeasurement(metrics);
+
+    // If we have HRV data, prefer HRV-based stress score
+    final hrvAssessment = StressAssessment(
+      level: hrvStressScore,
+      timestamp: metrics.timestamp,
+      processedBy: state.processingMode,
+      confidence: metrics.confidence,
+      rawScores: {
+        'rmssd': metrics.rmssd,
+        'sdnn': metrics.sdnn,
+        'pnn50': metrics.pnn50,
+        'stress_index': metrics.stressIndex,
+        'baseline_rmssd': _baselineService.baselineRmssd,
+      },
+    );
+
+    final newStressHistory = [...state.stressHistory, hrvAssessment];
+    if (newStressHistory.length > maxHistorySize) {
+      newStressHistory.removeAt(0);
+    }
+
+    state = state.copyWith(
+      currentHRV: metrics,
+      baselineDeviation: deviation,
+      currentStress: hrvAssessment,
+      stressHistory: newStressHistory,
+    );
+
+    // Evaluate notification with HRV-based score
+    _notificationService.evaluateStressReading(hrvStressScore);
   }
 
   Future<void> _updateOffloadingStatus() async {
@@ -118,11 +218,14 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
   void startSimulation() {
     _sensorService.startSimulation();
+    // Also activate SimulatorSource in SensorManager for RR intervals
+    _sensorManager.useSimulator();
     state = state.copyWith(isSimulationRunning: true);
   }
 
   void stopSimulation() {
     _sensorService.stopSimulation();
+    _sensorManager.stopActiveSource();
     state = state.copyWith(isSimulationRunning: false);
   }
 
@@ -134,9 +237,21 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     }
   }
 
+  /// Attaches a subjective stress rating to the most recent assessment
+  /// and updates the current stress with the rating included.
+  void recordSubjectiveRating(int rating) {
+    final current = state.currentStress;
+    if (current == null) return;
+
+    final updated = current.copyWith(subjectiveRating: rating);
+    state = state.copyWith(currentStress: updated);
+  }
+
   void resetData() {
     _sensorService.resetSimulation();
     _analysisService.clearHistory();
+    _hrvService.clearBuffer();
+    _notificationService.resetAlertState();
     state = const DashboardState();
     _updateOffloadingStatus();
   }
@@ -145,6 +260,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   void dispose() {
     _sensorSubscription?.cancel();
     _modeSubscription?.cancel();
+    _hrvSubscription?.cancel();
+    _sourceSubscription?.cancel();
+    _hrvService.stopPeriodicComputation();
     super.dispose();
   }
 }
@@ -156,5 +274,9 @@ final dashboardProvider =
     sensorService: sl<SensorSimulatorService>(),
     analysisService: sl<StressAnalysisService>(),
     offloadingManager: sl<OffloadingManager>(),
+    sensorManager: sl<SensorManager>(),
+    hrvService: sl<HRVComputationService>(),
+    baselineService: sl<BaselineService>(),
+    notificationService: sl<NotificationService>(),
   );
 });

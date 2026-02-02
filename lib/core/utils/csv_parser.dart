@@ -97,7 +97,7 @@ class CsvParser {
 }
 
 extension on double {
-  double exp() => 2.718281828459045 * this > -10 ?
+  double exp() => this > -10 ?
     _taylorExp(this) : 0.0;
 
   static double _taylorExp(double x) {

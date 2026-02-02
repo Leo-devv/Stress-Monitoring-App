@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../services/offloading_manager.dart';
 import '../../../services/stress_analysis_service.dart';
+import '../../../services/sync_queue_service.dart';
 import '../../../di/injection_container.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -135,26 +139,50 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     _saveSettings();
   }
 
-  /// GDPR "Nuke Data" - Deletes all user data
+  /// GDPR "Nuke Data" — Deletes all local and cloud user data.
   Future<bool> nukeAllData() async {
     state = state.copyWith(isDeletingData: true);
 
     try {
-      // Clear analysis history
+      // Clear in-memory analysis history
       _analysisService.clearHistory();
 
-      // Clear all Hive boxes
+      // Clear all Hive boxes (local data)
       await Hive.deleteBoxFromDisk(AppConstants.sensorReadingsBox);
       await Hive.deleteBoxFromDisk(AppConstants.stressHistoryBox);
 
-      // In production, also delete from Firestore:
-      // await FirebaseFirestore.instance
-      //     .collection('users')
-      //     .doc(userId)
-      //     .delete();
+      // Clear offline sync queue
+      try {
+        await sl<SyncQueueService>().clearQueue();
+      } catch (_) {}
 
-      // Simulate Firestore deletion delay
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Delete Firestore user document + subcollections
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final userDoc =
+            FirebaseFirestore.instance.collection('users').doc(uid);
+
+        // Delete stress_assessments subcollection in chunks of 500
+        // (Firestore batch limit)
+        QuerySnapshot chunk;
+        do {
+          chunk = await userDoc
+              .collection('stress_assessments')
+              .limit(500)
+              .get();
+          if (chunk.docs.isNotEmpty) {
+            final batch = FirebaseFirestore.instance.batch();
+            for (final doc in chunk.docs) {
+              batch.delete(doc.reference);
+            }
+            await batch.commit();
+          }
+        } while (chunk.docs.length == 500);
+
+        // Delete user document itself
+        await userDoc.delete();
+        debugPrint('Firestore: deleted users/$uid and subcollections');
+      }
 
       state = state.copyWith(
         isDeletingData: false,
@@ -163,6 +191,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
       return true;
     } catch (e) {
+      debugPrint('nukeAllData error: $e');
       state = state.copyWith(isDeletingData: false);
       return false;
     }

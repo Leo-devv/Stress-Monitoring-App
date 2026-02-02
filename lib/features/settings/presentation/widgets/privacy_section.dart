@@ -8,6 +8,7 @@ class PrivacySection extends StatelessWidget {
   final ValueChanged<bool> onDataCollectionChanged;
   final ValueChanged<int> onRetentionDaysChanged;
   final VoidCallback onNukeData;
+  final VoidCallback onExportData;
 
   const PrivacySection({
     super.key,
@@ -17,6 +18,7 @@ class PrivacySection extends StatelessWidget {
     required this.onDataCollectionChanged,
     required this.onRetentionDaysChanged,
     required this.onNukeData,
+    required this.onExportData,
   });
 
   @override
@@ -78,14 +80,7 @@ class PrivacySection extends StatelessWidget {
             subtitle: 'Download all your data (GDPR)',
             trailing: IconButton(
               icon: const Icon(Icons.chevron_right, color: AppColors.textMuted),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Data export coming soon', style: AppTypography.bodyMedium),
-                    backgroundColor: AppColors.surfaceElevated,
-                  ),
-                );
-              },
+              onPressed: onExportData,
             ),
           ),
 

@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../providers/settings_provider.dart';
 import '../../../simulation/providers/simulation_provider.dart';
@@ -56,6 +60,7 @@ class SettingsPage extends ConsumerWidget {
               onRetentionDaysChanged: (days) {
                 ref.read(settingsProvider.notifier).setDataRetentionDays(days);
               },
+              onExportData: () => _handleExport(context, ref),
               onNukeData: () async {
                 final confirmed = await _showNukeConfirmation(context);
                 if (confirmed) {
@@ -84,6 +89,31 @@ class SettingsPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleExport(BuildContext context, WidgetRef ref) async {
+    try {
+      final data = await ref.read(settingsProvider.notifier).exportAllData();
+      final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/stress_monitor_export.json');
+      await file.writeAsString(jsonString);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Stress Monitor — Data Export',
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export failed: $e', style: AppTypography.bodyMedium),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    }
   }
 
   Future<bool> _showNukeConfirmation(BuildContext context) async {

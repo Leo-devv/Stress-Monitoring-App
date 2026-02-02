@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/theme/app_theme.dart';
 
-/// History Screen - Shows stress calendar and daily charts
+/// History Screen - Shows stress calendar and daily charts.
+///
+/// Loads real assessment data from Firestore when available,
+/// falling back to generated mock data otherwise.
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
 
@@ -17,15 +22,80 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  // Mock data for demo - stress levels per day
-  final Map<DateTime, int> _stressData = _generateMockData();
+  /// Average stress level per calendar day.
+  Map<DateTime, int> _stressData = {};
+
+  /// All individual assessments grouped by calendar day.
+  Map<DateTime, List<_DayAssessment>> _dayAssessments = {};
+
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAssessments();
+  }
+
+  Future<void> _loadAssessments() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) throw Exception('No authenticated user');
+
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('stress_assessments')
+          .orderBy('timestamp', descending: true)
+          .limit(500)
+          .get();
+
+      if (snapshot.docs.isEmpty) throw Exception('No assessments');
+
+      final dataByDay = <DateTime, List<_DayAssessment>>{};
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final ts = DateTime.parse(data['timestamp'] as String);
+        final level = data['level'] as int;
+        final dayKey = DateTime(ts.year, ts.month, ts.day);
+
+        dataByDay.putIfAbsent(dayKey, () => []);
+        dataByDay[dayKey]!.add(_DayAssessment(
+          timestamp: ts,
+          level: level,
+        ));
+      }
+
+      final avgByDay = <DateTime, int>{};
+      for (final entry in dataByDay.entries) {
+        final sum = entry.value.fold<int>(0, (s, a) => s + a.level);
+        avgByDay[entry.key] = (sum / entry.value.length).round();
+      }
+
+      if (mounted) {
+        setState(() {
+          _stressData = avgByDay;
+          _dayAssessments = dataByDay;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('History: falling back to mock data ($e)');
+      if (mounted) {
+        setState(() {
+          _stressData = _generateMockData();
+          _dayAssessments = {};
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   static Map<DateTime, int> _generateMockData() {
     final data = <DateTime, int>{};
     final now = DateTime.now();
     for (int i = 0; i < 60; i++) {
       final day = DateTime(now.year, now.month, now.day - i);
-      // Generate realistic-looking stress patterns
       final baseStress = 40 + (i % 7) * 5;
       final variation = (i * 17) % 30 - 15;
       data[day] = (baseStress + variation).clamp(15, 95);
@@ -42,37 +112,40 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         backgroundColor: AppColors.background,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() => _isLoading = true);
+              _loadAssessments();
+            },
+            tooltip: 'Refresh',
+          ),
+          IconButton(
             icon: const Icon(Icons.file_download_outlined),
             onPressed: _exportData,
             tooltip: 'Export Data',
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: AppSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Summary Stats
-            _buildSummaryStats(),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Calendar
-            _buildCalendar(),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Daily Detail Chart (if day selected)
-            if (_selectedDay != null) ...[
-              _buildDayDetail(),
-              const SizedBox(height: AppSpacing.lg),
-            ],
-
-            // Weekly Trend Chart
-            _buildWeeklyTrend(),
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: AppSpacing.screenPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSummaryStats(),
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildCalendar(),
+                  const SizedBox(height: AppSpacing.lg),
+                  if (_selectedDay != null) ...[
+                    _buildDayDetail(),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                  _buildWeeklyTrend(),
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
     );
   }
 
@@ -160,7 +233,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             shape: BoxShape.circle,
           ),
           todayDecoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha:0.3),
+            color: AppColors.accent.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
           markerDecoration: const BoxDecoration(
@@ -177,8 +250,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           ),
           formatButtonTextStyle: AppTypography.caption,
           titleTextStyle: AppTypography.h3,
-          leftChevronIcon: const Icon(Icons.chevron_left, color: AppColors.textSecondary),
-          rightChevronIcon: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+          leftChevronIcon:
+              const Icon(Icons.chevron_left, color: AppColors.textSecondary),
+          rightChevronIcon:
+              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
         ),
         calendarBuilders: CalendarBuilders(
           defaultBuilder: (context, day, focusedDay) {
@@ -202,11 +277,10 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     return Container(
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: stressLevel != null ? color.withValues(alpha:0.3) : null,
+        color: stressLevel != null ? color.withValues(alpha: 0.3) : null,
         shape: BoxShape.circle,
-        border: isToday
-            ? Border.all(color: AppColors.accent, width: 2)
-            : null,
+        border:
+            isToday ? Border.all(color: AppColors.accent, width: 2) : null,
       ),
       child: Center(
         child: Text(
@@ -221,11 +295,12 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   Widget _buildDayDetail() {
-    final stressLevel = _stressData[DateTime(
+    final dayKey = DateTime(
       _selectedDay!.year,
       _selectedDay!.month,
       _selectedDay!.day,
-    )];
+    );
+    final stressLevel = _stressData[dayKey];
 
     return Container(
       padding: AppSpacing.cardPadding,
@@ -246,9 +321,11 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               ),
               if (stressLevel != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.getStressColor(stressLevel).withValues(alpha:0.2),
+                    color: AppColors.getStressColor(stressLevel)
+                        .withValues(alpha: 0.2),
                     borderRadius: AppRadius.badge,
                   ),
                   child: Text(
@@ -263,25 +340,39 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             height: 150,
-            child: _buildDayChart(),
+            child: _buildDayChart(dayKey),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDayChart() {
-    // Generate hourly data for selected day
-    final spots = List.generate(24, (i) {
-      final baseStress = _stressData[DateTime(
-            _selectedDay!.year,
-            _selectedDay!.month,
-            _selectedDay!.day,
-          )] ??
-          50;
-      final variation = ((i * 13 + 7) % 30) - 15;
-      return FlSpot(i.toDouble(), (baseStress + variation).clamp(10, 100).toDouble());
-    });
+  Widget _buildDayChart(DateTime dayKey) {
+    // Use real per-hour data when available
+    final assessments = _dayAssessments[dayKey];
+
+    List<FlSpot> spots;
+    if (assessments != null && assessments.isNotEmpty) {
+      // Group assessments by hour and average
+      final byHour = <int, List<int>>{};
+      for (final a in assessments) {
+        byHour.putIfAbsent(a.timestamp.hour, () => []);
+        byHour[a.timestamp.hour]!.add(a.level);
+      }
+      spots = byHour.entries.map((e) {
+        final avg = e.value.reduce((a, b) => a + b) / e.value.length;
+        return FlSpot(e.key.toDouble(), avg.clamp(0, 100));
+      }).toList()
+        ..sort((a, b) => a.x.compareTo(b.x));
+    } else {
+      // Fallback: synthetic hourly data from daily average
+      final baseStress = _stressData[dayKey] ?? 50;
+      spots = List.generate(24, (i) {
+        final variation = ((i * 13 + 7) % 30) - 15;
+        return FlSpot(
+            i.toDouble(), (baseStress + variation).clamp(10, 100).toDouble());
+      });
+    }
 
     return LineChart(
       LineChartData(
@@ -290,7 +381,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           drawVerticalLine: false,
           horizontalInterval: 25,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: AppColors.border.withValues(alpha:0.5),
+            color: AppColors.border.withValues(alpha: 0.5),
             strokeWidth: 1,
           ),
         ),
@@ -334,8 +425,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  AppColors.accent.withValues(alpha:0.3),
-                  AppColors.accent.withValues(alpha:0.0),
+                  AppColors.accent.withValues(alpha: 0.3),
+                  AppColors.accent.withValues(alpha: 0.0),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -383,7 +474,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               return BarTooltipItem(
                 '${rod.toY.round()}%',
-                AppTypography.label.copyWith(color: AppColors.textPrimary),
+                AppTypography.label
+                    .copyWith(color: AppColors.textPrimary),
               );
             },
           ),
@@ -483,7 +575,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   String _formatDate(DateTime date) {
-    final months = [
+    const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
@@ -491,13 +583,23 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 
   void _exportData() {
+    // Navigate to Settings → Privacy section where the real export lives
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Export feature - Coming soon', style: AppTypography.bodyMedium),
+        content: Text('Use Settings → Export My Data for full GDPR export',
+            style: AppTypography.bodyMedium),
         backgroundColor: AppColors.surface,
       ),
     );
   }
+}
+
+/// Lightweight data class for individual assessments within a day.
+class _DayAssessment {
+  final DateTime timestamp;
+  final int level;
+
+  const _DayAssessment({required this.timestamp, required this.level});
 }
 
 class _StatItem extends StatelessWidget {
@@ -520,7 +622,7 @@ class _StatItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withValues(alpha:0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 22),

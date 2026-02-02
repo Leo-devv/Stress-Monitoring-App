@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -36,6 +38,19 @@ app.*.symbols
 
 # Obfuscation related
 app.*.map.json
+
+# iOS / CocoaPods
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/App.framework
+ios/build/
+**/Pods/
+**/ios/Podfile.lock
 
 # Android Studio will place build artifacts here
 /android/app/debug

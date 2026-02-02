@@ -43,9 +43,9 @@ class OffloadingSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.06),
+              color: AppColors.primary.withValues(alpha:0.06),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+              border: Border.all(color: AppColors.primary.withValues(alpha:0.15)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +125,7 @@ class OffloadingSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.12),
+                    color: AppColors.primary.withValues(alpha:0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -174,10 +174,10 @@ class OffloadingSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.08) : AppColors.surfaceElevated,
+          color: isSelected ? color.withValues(alpha:0.08) : AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.4) : AppColors.border,
+            color: isSelected ? color.withValues(alpha:0.4) : AppColors.border,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -186,7 +186,7 @@ class OffloadingSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(isSelected ? 0.15 : 0.08),
+                color: color.withValues(alpha:isSelected ? 0.15 : 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -211,11 +211,9 @@ class OffloadingSection extends StatelessWidget {
                 ],
               ),
             ),
-            Radio<bool>(
-              value: true,
-              groupValue: isSelected,
-              onChanged: (_) => onTap(),
-              activeColor: color,
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? color : AppColors.textMuted,
             ),
           ],
         ),

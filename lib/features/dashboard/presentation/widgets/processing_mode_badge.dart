@@ -26,10 +26,10 @@ class ProcessingModeBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha:0.12),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withOpacity(0.4),
+            color: color.withValues(alpha:0.4),
             width: 1.5,
           ),
         ),
@@ -54,14 +54,14 @@ class ProcessingModeBadge extends StatelessWidget {
                 Text(
                   subtitle,
                   style: AppTypography.caption.copyWith(
-                    color: color.withOpacity(0.8),
+                    color: color.withValues(alpha:0.8),
                     fontSize: 9,
                   ),
                 ),
               ],
             ),
             const SizedBox(width: 4),
-            Icon(Icons.info_outline, size: 12, color: color.withOpacity(0.6)),
+            Icon(Icons.info_outline, size: 12, color: color.withValues(alpha:0.6)),
           ],
         ),
       ),
@@ -96,9 +96,9 @@ class ProcessingModeBadge extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
+                color: AppColors.primary.withValues(alpha:0.08),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                border: Border.all(color: AppColors.primary.withValues(alpha:0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +206,7 @@ class ProcessingModeBadge extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: valueColor.withOpacity(0.12),
+            color: valueColor.withValues(alpha:0.12),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(

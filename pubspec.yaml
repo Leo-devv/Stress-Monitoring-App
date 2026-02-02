@@ -17,13 +17,13 @@ dependencies:
   flutter_riverpod: ^2.5.1
 
   # Firebase Suite
-  firebase_core: ^2.27.0
-  cloud_firestore: ^4.15.0
-  cloud_functions: ^4.6.0
-  firebase_auth: ^4.17.0
+  firebase_core: ^3.0.0
+  cloud_firestore: ^5.0.0
+  cloud_functions: ^5.0.0
+  firebase_auth: ^5.0.0
 
   # On-device ML
-  tflite_flutter: ^0.10.4
+  tflite_flutter: ^0.11.0
 
   # Local Storage
   hive_flutter: ^1.1.0
@@ -65,8 +65,12 @@ dependencies:
 
   # Real Sensor Input
   flutter_blue_plus: ^1.31.0
-  camera: ^0.11.0+2
+  camera: ^0.11.1
   wakelock_plus: ^1.2.0
+
+dependency_overrides:
+  win32: ^5.9.0
+  flutter_plugin_android_lifecycle: ^2.0.21
 
 dev_dependencies:
   flutter_test:

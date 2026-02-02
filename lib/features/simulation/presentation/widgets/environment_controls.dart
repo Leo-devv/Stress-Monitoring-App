@@ -152,7 +152,7 @@ class EnvironmentControls extends StatelessWidget {
               Switch(
                 value: isWifiConnected,
                 onChanged: onWifiChanged,
-                activeColor: AppColors.cloudMode,
+                activeThumbColor: AppColors.cloudMode,
               ),
             ],
           ),

@@ -33,7 +33,9 @@
       "Bash(\"C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" devices)",
       "Bash(findstr:*)",
       "Bash(cmd /c \"start /b C:\\\\Users\\\\Rea\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\emulator\\\\emulator.exe -avd Medium_Phone_API_36.1 -gpu swiftshader_indirect -no-snapshot\")",
-      "Bash(xargs find -type d)"
+      "Bash(xargs find -type d)",
+      "Bash(pod install)",
+      "Bash(flutter pub upgrade:*)"
     ]
   }
 }

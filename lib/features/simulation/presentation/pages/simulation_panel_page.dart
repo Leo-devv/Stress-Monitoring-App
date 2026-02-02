@@ -90,7 +90,7 @@ class SimulationPanelPage extends ConsumerWidget {
                       Switch(
                         value: state.useManualValues,
                         onChanged: notifier.setUseManualValues,
-                        activeColor: AppColors.primary,
+                        activeThumbColor: AppColors.primary,
                       ),
                     ],
                   ),

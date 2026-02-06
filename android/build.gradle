@@ -19,7 +19,7 @@ subprojects {
 subprojects {
     ext.set('flutter', [
         compileSdkVersion: 35,
-        minSdkVersion    : 21,
+        minSdkVersion    : 26,
         targetSdkVersion : 35,
     ])
 }

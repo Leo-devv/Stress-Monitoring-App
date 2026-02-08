@@ -38,8 +38,8 @@ class BaselineValues {
 
 /// Clinically-informed, threshold-based stress classification engine.
 ///
-/// Replaces the TFLite model with a transparent, deterministic scoring
-/// system that uses all available HRV features.  Each feature is mapped
+/// Uses a transparent, deterministic scoring system based on clinical
+/// HRV reference ranges.  Each feature is mapped
 /// to a 0-100 stress subscale via piecewise-linear interpolation across
 /// four zones (relaxed / normal / elevated / high), then combined using
 /// evidence-based weights from [StressThresholds].

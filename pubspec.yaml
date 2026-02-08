@@ -1,5 +1,5 @@
 name: stress_monitor_app
-description: "AI-Powered Stress Monitoring with Edge/Cloud Hybrid Processing - Engineering Thesis"
+description: "Personal Stress Monitoring with Adaptive Edge/Cloud Processing - Engineering Thesis"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -65,7 +65,7 @@ dependencies:
 
   # Real Sensor Input
   flutter_blue_plus: ^1.31.0
-  camera: ^0.11.1
+  camera: ^0.10.5+9
   wakelock_plus: ^1.2.0
 
 dependency_overrides:
@@ -82,4 +82,3 @@ flutter:
 
   assets:
     - assets/data/
-    - assets/models/

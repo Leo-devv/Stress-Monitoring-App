@@ -129,7 +129,7 @@ class SettingsPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.danger.withValues(alpha:0.12),
+                    color: AppColors.danger.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.delete_forever, color: AppColors.danger),
@@ -154,7 +154,7 @@ class SettingsPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: AppColors.dangerLight,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.danger.withValues(alpha:0.3)),
+                    border: Border.all(color: AppColors.danger.withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [

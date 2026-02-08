@@ -41,7 +41,7 @@ class PrivacySection extends StatelessWidget {
             trailing: Switch(
               value: dataCollectionEnabled,
               onChanged: onDataCollectionChanged,
-              activeThumbColor: AppColors.primary,
+              activeColor: AppColors.primary,
             ),
           ),
 
@@ -96,7 +96,7 @@ class PrivacySection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.danger.withValues(alpha:0.12),
+                      color: AppColors.danger.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: isDeletingData
@@ -158,7 +158,7 @@ class PrivacySection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha:0.12),
+              color: iconColor.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: iconColor, size: 22),

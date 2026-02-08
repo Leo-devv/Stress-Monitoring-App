@@ -75,7 +75,7 @@ class AboutSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '"The Role of AI in Personal Stress Monitoring: A Mobile Cloud Approach"',
+                  '"Personal Stress Monitoring: An Adaptive Mobile-Cloud System"',
                   style: AppTypography.bodySmall.copyWith(fontStyle: FontStyle.italic),
                 ),
               ],
@@ -87,7 +87,7 @@ class AboutSection extends StatelessWidget {
           // Tech Stack
           _buildInfoRow(icon: Icons.phone_android, label: 'Frontend', value: 'Flutter'),
           const SizedBox(height: 10),
-          _buildInfoRow(icon: Icons.memory, label: 'Edge AI', value: 'TensorFlow Lite'),
+          _buildInfoRow(icon: Icons.memory, label: 'Classification', value: 'Threshold Engine'),
           const SizedBox(height: 10),
           _buildInfoRow(icon: Icons.cloud, label: 'Cloud', value: 'Firebase'),
           const SizedBox(height: 10),

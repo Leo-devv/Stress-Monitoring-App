@@ -31,7 +31,7 @@ class SimulationControls extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha:0.12),
+                  color: AppColors.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -68,7 +68,7 @@ class SimulationControls extends StatelessWidget {
                   boxShadow: isRunning
                       ? [
                           BoxShadow(
-                            color: AppColors.success.withValues(alpha:0.5),
+                            color: AppColors.success.withOpacity(0.5),
                             blurRadius: 8,
                             spreadRadius: 2,
                           ),

@@ -233,7 +233,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
             shape: BoxShape.circle,
           ),
           todayDecoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.3),
+            color: AppColors.accent.withOpacity( 0.3),
             shape: BoxShape.circle,
           ),
           markerDecoration: const BoxDecoration(
@@ -277,7 +277,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
     return Container(
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: stressLevel != null ? color.withValues(alpha: 0.3) : null,
+        color: stressLevel != null ? color.withOpacity( 0.3) : null,
         shape: BoxShape.circle,
         border:
             isToday ? Border.all(color: AppColors.accent, width: 2) : null,
@@ -325,7 +325,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                       horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.getStressColor(stressLevel)
-                        .withValues(alpha: 0.2),
+                        .withOpacity( 0.2),
                     borderRadius: AppRadius.badge,
                   ),
                   child: Text(
@@ -381,7 +381,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
           drawVerticalLine: false,
           horizontalInterval: 25,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: AppColors.border.withValues(alpha: 0.5),
+            color: AppColors.border.withOpacity( 0.5),
             strokeWidth: 1,
           ),
         ),
@@ -425,8 +425,8 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  AppColors.accent.withValues(alpha: 0.3),
-                  AppColors.accent.withValues(alpha: 0.0),
+                  AppColors.accent.withOpacity( 0.3),
+                  AppColors.accent.withOpacity( 0.0),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -622,7 +622,7 @@ class _StatItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
+            color: color.withOpacity( 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 22),

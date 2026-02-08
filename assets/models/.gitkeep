@@ -1,3 +1,0 @@
-# TFLite model placeholder
-# In production, place your trained stress_classifier.tflite model here
-# The app uses a software-based inference fallback when no model is present

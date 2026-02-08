@@ -1,37 +1,45 @@
 # Stress Monitor App
 
-## Engineering Thesis: "The Role of AI in Personal Stress Monitoring: A Mobile Cloud Approach"
+## Engineering Thesis: "Personal Stress Monitoring: An Adaptive Mobile-Cloud System"
 
-A Flutter (Android) prototype demonstrating intelligent hybrid Edge/Cloud processing for stress monitoring using simulated WESAD sensor data.
+A Flutter (Android) application demonstrating adaptive edge-cloud processing for real-time stress monitoring using HRV analysis from BLE heart rate monitors and camera-based PPG.
 
 ---
 
 ## Key Features
 
-### 1. Virtual Sensor Simulator
-- Reads WESAD-format sensor data (BVP, EDA, Temperature)
-- Emits data points every second to simulate a live wearable
-- Manual override sliders for thesis defense demos
+### 1. Dual Sensor Acquisition
+- **BLE Heart Rate Monitor**: Connects to standard Bluetooth LE heart rate devices (Polar, Garmin, Wahoo, Xiaomi)
+- **Camera PPG**: Measures heart rate through smartphone camera photoplethysmography
+- **Simulator**: Demo mode with configurable sensor data for testing
 
-### 2. Intelligent Offloading Manager
-The "Brain" that decides between Edge and Cloud processing:
+### 2. HRV-Based Stress Classification
+Seven HRV features analyzed in real-time:
+- RMSSD, SDNN, pNN50 (time-domain)
+- LF/HF Ratio, HF Power (frequency-domain)
+- Baevsky Stress Index
+- Mean Heart Rate
+
+Threshold-based classification into four stress levels: Relaxed, Normal, Elevated, High.
+
+### 3. Adaptive Offloading Manager
+Intelligent routing between Edge and Cloud processing:
 
 ```
-IF Battery < 20%     → EDGE MODE (TFLite on phone)
-IF Battery > 20% + WiFi → CLOUD MODE (Firebase)
+IF Battery < 20%        → EDGE (on-device processing)
+IF Battery ≥ 20% + WiFi → CLOUD (Firebase)
+IF No WiFi              → EDGE (avoid mobile data)
 ```
-
-### 3. Dual AI Processing
-- **Edge**: On-device stress inference (simulates TFLite)
-- **Cloud**: Firebase Cloud Functions for "heavy" AI
 
 ### 4. Android 14 Compliant
 - Kotlin ForegroundService with `foregroundServiceType="health"`
 - POST_NOTIFICATIONS permission handling
+- Minimum SDK 26 (Android 8.0)
 
-### 5. GDPR Privacy Controls
-- "Nuke Data" button to delete all user data
-- Data export functionality
+### 5. Privacy Controls
+- Local data storage with Hive
+- Cloud sync to Firebase Firestore
+- Data export and deletion options
 
 ---
 
@@ -43,7 +51,8 @@ IF Battery > 20% + WiFi → CLOUD MODE (Firebase)
 | State Management | Riverpod |
 | Charts | fl_chart, syncfusion_gauges |
 | Local Storage | Hive |
-| Cloud | Firebase (Firestore, Cloud Functions) |
+| Cloud | Firebase Firestore |
+| Sensors | flutter_blue_plus, camera |
 | Native | Kotlin (Foreground Service) |
 
 ---
@@ -54,14 +63,19 @@ IF Battery > 20% + WiFi → CLOUD MODE (Firebase)
 lib/
 ├── main.dart                    # App entry point
 ├── app.dart                     # Routing & theme
-├── core/                        # Constants, utils
+├── core/                        # Constants, utils, theme
 ├── domain/entities/             # Business entities
 ├── features/
 │   ├── dashboard/               # Main screen with gauge & chart
+│   ├── breathing/               # Guided breathing exercises
+│   ├── device/                  # BLE/Camera sensor connection
+│   ├── history/                 # Stress history view
 │   ├── simulation/              # Demo control panel
 │   └── settings/                # Privacy & offloading settings
 ├── services/
-│   ├── sensor_simulator_service.dart
+│   ├── sensor/                  # BLE, Camera PPG, Simulator sources
+│   ├── hrv_computation_service.dart
+│   ├── threshold_stress_engine.dart
 │   ├── offloading_manager.dart
 │   ├── edge_inference_service.dart
 │   └── cloud_inference_service.dart
@@ -69,13 +83,9 @@ lib/
 
 android/app/src/main/kotlin/
 └── com/stressmonitor/stress_monitor_app/
-    ├── MainActivity.kt          # Flutter ↔ Kotlin bridge
+    ├── MainActivity.kt
     └── services/
         └── SensorForegroundService.kt
-
-firebase/functions/
-├── index.js                     # Cloud Functions
-└── package.json
 ```
 
 ---
@@ -85,7 +95,7 @@ firebase/functions/
 ### Prerequisites
 - Flutter 3.16+
 - Android Studio / VS Code
-- Firebase CLI (for cloud functions)
+- Android device or emulator (API 26+)
 
 ### Installation
 
@@ -101,75 +111,57 @@ flutter pub get
 flutter run
 ```
 
-### Firebase Setup (Optional for full cloud features)
+### Firebase Setup (Optional)
 
 ```bash
 # Install Firebase CLI
 npm install -g firebase-tools
 
-# Login to Firebase
+# Login and initialize
 firebase login
-
-# Initialize Firebase in the project
 firebase init
 
-# Deploy Cloud Functions
-cd firebase/functions
-npm install
-firebase deploy --only functions
+# Select Firestore when prompted
 ```
 
 ---
 
-## Demo Script (Thesis Defense)
-
-1. **Launch App** → Dashboard shows "Waiting for sensor data"
-2. **Go to Simulation Panel** → Tap "Start" to begin data stream
-3. **Watch the Chart** → Heart rate data fills in real-time
-4. **Test Offloading Logic**:
-   - Slide Battery to **15%** → Badge changes to GREEN "EDGE"
-   - Slide Battery to **80%** + WiFi ON → Badge changes to BLUE "CLOUD"
-5. **Test GDPR Compliance**:
-   - Go to Settings → Tap "Delete All My Data"
-   - Confirm deletion → All data removed
-
----
-
-## Architecture Diagram
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                      FLUTTER APP                              │
+│                      FLUTTER APP                             │
 ├──────────────────────────────────────────────────────────────┤
-│                                                               │
-│   ┌─────────────┐    ┌─────────────────┐    ┌─────────────┐ │
-│   │   Sensor    │───▶│   Offloading    │───▶│     AI      │ │
-│   │  Simulator  │    │    Manager      │    │  Processor  │ │
-│   └─────────────┘    └─────────────────┘    └──────┬──────┘ │
-│                              │                      │        │
-│                    ┌─────────┴─────────┐           │        │
-│                    ▼                   ▼           │        │
-│            ┌─────────────┐    ┌─────────────┐      │        │
-│            │Battery < 20%│    │Battery ≥ 20%│      │        │
-│            │  No WiFi    │    │ + WiFi      │      │        │
-│            └──────┬──────┘    └──────┬──────┘      │        │
-│                   │                  │             │        │
-│                   ▼                  ▼             │        │
-│            ┌─────────────┐    ┌─────────────┐      │        │
-│            │    EDGE     │    │    CLOUD    │◀─────┘        │
-│            │  (TFLite)   │    │  (Firebase) │               │
-│            └─────────────┘    └─────────────┘               │
-│                                                               │
-└──────────────────────────────────────────────────────────────┘
+│                                                              │
+│   ┌─────────────┐    ┌─────────────────┐    ┌────────────┐  │
+│   │   Sensor    │───▶│   Offloading    │───▶│  Stress    │  │
+│   │   Manager   │    │    Manager      │    │  Engine    │  │
+│   └─────────────┘    └─────────────────┘    └─────┬──────┘  │
+│         │                    │                    │         │
+│   ┌─────┴─────┐    ┌────────┴────────┐          │         │
+│   │           │    │                  │          │         │
+│   ▼           ▼    ▼                  ▼          │         │
+│ ┌─────┐  ┌──────┐ ┌──────────┐ ┌──────────┐     │         │
+│ │ BLE │  │Camera│ │Battery<20│ │Battery≥20│     │         │
+│ │ HR  │  │ PPG  │ │ No WiFi  │ │ + WiFi   │     │         │
+│ └─────┘  └──────┘ └────┬─────┘ └────┬─────┘     │         │
+│                        │            │           │         │
+│                        ▼            ▼           │         │
+│                  ┌──────────┐ ┌──────────┐      │         │
+│                  │   EDGE   │ │  CLOUD   │◀─────┘         │
+│                  │(On-Device│ │(Firebase)│                │
+│                  └──────────┘ └──────────┘                │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Screens
 
-| Dashboard | Simulation | Settings |
-|-----------|------------|----------|
-| Stress gauge, HR chart, live stats | HR/EDA/Temp sliders, battery control | Privacy, offloading strategy |
+| Dashboard | History | Settings |
+|-----------|---------|----------|
+| Stress gauge, HRV metrics, live chart | Historical stress trends | Offloading strategy, privacy controls |
 
 ---
 
@@ -181,4 +173,4 @@ This project is created for academic purposes as part of an Engineering Thesis.
 
 ## Author
 
-Built with Claude Code for thesis demonstration.
+Built for thesis demonstration.

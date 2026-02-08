@@ -81,7 +81,7 @@ class HeartRateChart extends StatelessWidget {
         drawVerticalLine: false,
         horizontalInterval: 20,
         getDrawingHorizontalLine: (value) => FlLine(
-          color: AppColors.border.withValues(alpha:0.5),
+          color: AppColors.border.withOpacity(0.5),
           strokeWidth: 1,
         ),
       ),
@@ -127,8 +127,8 @@ class HeartRateChart extends StatelessWidget {
             show: true,
             gradient: LinearGradient(
               colors: [
-                _getLineColor().withValues(alpha:0.25),
-                _getLineColor().withValues(alpha:0.0),
+                _getLineColor().withOpacity(0.25),
+                _getLineColor().withOpacity(0.0),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

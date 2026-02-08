@@ -24,12 +24,12 @@ class StressGaugeWidget extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha:0.2),
+            color: color.withOpacity(0.2),
             blurRadius: 40,
             spreadRadius: 8,
           ),
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha:0.04),
+            color: AppColors.textPrimary.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -55,13 +55,13 @@ class StressGaugeWidget extends StatelessWidget {
             majorTickStyle: MajorTickStyle(
               length: 10,
               thickness: 2,
-              color: AppColors.textMuted.withValues(alpha:0.5),
+              color: AppColors.textMuted.withOpacity(0.5),
             ),
             minorTicksPerInterval: 4,
             minorTickStyle: MinorTickStyle(
               length: 5,
               thickness: 1,
-              color: AppColors.textMuted.withValues(alpha:0.3),
+              color: AppColors.textMuted.withOpacity(0.3),
             ),
             pointers: <GaugePointer>[
               // Arc pointer showing current level
@@ -72,7 +72,7 @@ class StressGaugeWidget extends StatelessWidget {
                 cornerStyle: CornerStyle.bothCurve,
                 gradient: SweepGradient(
                   colors: [
-                    color.withValues(alpha:0.4),
+                    color.withOpacity(0.4),
                     color,
                   ],
                   stops: const [0.25, 1.0],
@@ -114,7 +114,7 @@ class StressGaugeWidget extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha:0.12),
+                        color: color.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(

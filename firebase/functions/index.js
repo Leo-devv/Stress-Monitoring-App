@@ -1,8 +1,8 @@
 /**
  * Firebase Cloud Functions for Stress Monitor Thesis App
  *
- * This represents the "Cloud Tier" (Tier 3) of the hybrid Edge/Cloud architecture
- * for the Engineering Thesis: "The Role of AI in Personal Stress Monitoring"
+ * This represents the "Cloud Tier" of the hybrid Edge/Cloud architecture
+ * for the Engineering Thesis: "Personal Stress Monitoring: An Adaptive Mobile-Cloud System"
  */
 
 const functions = require('firebase-functions');
@@ -15,7 +15,7 @@ const db = admin.firestore();
 /**
  * Cloud Function: analyzeStressCloud
  *
- * Performs "heavy" AI stress analysis on the cloud
+ * Performs stress analysis on the cloud
  * Called when battery > 20% and WiFi is available
  *
  * Input: { bvp, eda, temperature, userId }
@@ -32,7 +32,7 @@ exports.analyzeStressCloud = functions.https.onCall(async (data, context) => {
     );
   }
 
-  // Perform stress calculation (simulating "heavy" AI model)
+  // Perform stress calculation using threshold-based algorithm
   const stressResult = calculateStressLevel(bvp, eda, temperature);
 
   // Store result in Firestore if userId provided

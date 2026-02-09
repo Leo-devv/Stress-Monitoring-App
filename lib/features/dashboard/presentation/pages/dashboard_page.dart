@@ -467,8 +467,8 @@ class DashboardPage extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     isEdge
-                        ? 'AI runs on your phone (EDGE mode)'
-                        : 'AI runs on cloud server (CLOUD mode)',
+                        ? 'Processing on your phone (EDGE mode)'
+                        : 'Processing on cloud server (CLOUD mode)',
                     style: AppTypography.caption.copyWith(
                       color: isEdge
                           ? AppColors.edgeMode

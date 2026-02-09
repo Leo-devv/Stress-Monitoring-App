@@ -69,7 +69,7 @@ dependencies:
   wakelock_plus: ^1.2.0
 
 dependency_overrides:
-  win32: ^5.9.0
+  win32: 5.5.0
   flutter_plugin_android_lifecycle: ^2.0.21
 
 dev_dependencies:

@@ -19,7 +19,7 @@ class ProcessingModeBadge extends StatelessWidget {
     final color = isEdge ? AppColors.edgeMode : AppColors.cloudMode;
     final icon = isEdge ? Icons.phone_android : Icons.cloud;
     final label = isEdge ? 'EDGE' : 'CLOUD';
-    final subtitle = isEdge ? 'On-Device AI' : 'Server AI';
+    final subtitle = isEdge ? 'On-Device' : 'Server';
 
     return GestureDetector(
       onTap: () => _showStatusDialog(context),
@@ -113,8 +113,8 @@ class ProcessingModeBadge extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     offloadingStatus!.currentMode == ProcessingMode.edge
-                        ? 'Your stress is being analyzed BY YOUR PHONE using on-device AI. This is faster and works offline.'
-                        : 'Your stress is being analyzed ON A SERVER using cloud AI. This happens when you have WiFi.',
+                        ? 'Your stress is being analyzed BY YOUR PHONE. This is faster and works offline.'
+                        : 'Your stress is being analyzed ON A SERVER. This happens when you have WiFi.',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),

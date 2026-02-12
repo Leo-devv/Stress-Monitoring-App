@@ -197,7 +197,7 @@ function calculateStressLevel(bvp, eda, temperature) {
   const edaNormalized = normalizeEDA(eda);
   const tempNormalized = normalizeTemperature(temperature);
 
-  // Weighted combination (these weights would be learned in a real ML model)
+  // Weighted combination (fixed thresholds for rule-based classification)
   // HR: 45%, EDA: 40%, Temperature: 15%
   const weights = { hr: 0.45, eda: 0.40, temp: 0.15 };
 
